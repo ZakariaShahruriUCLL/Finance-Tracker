@@ -17,27 +17,26 @@ public record TransactionDto(
     public record CategorySummary(String id, String name, String color, String icon) {}
 
     public static TransactionDto from(Transaction t) {
-        CategorySummary catSummary = null;
-        if (t.getCategory() != null) {
-            catSummary = new CategorySummary(
-                    t.getCategory().getId().toString(),
-                    t.getCategory().getName(),
-                    t.getCategory().getColor(),
-                    t.getCategory().getIcon()
+        CategorySummary cat = null;
+        if (t.getCategoryId() != null) {
+            cat = new CategorySummary(
+                    t.getCategoryId(),
+                    t.getCategoryName(),
+                    t.getCategoryColor(),
+                    t.getCategoryIcon()
             );
         }
-
         return new TransactionDto(
-                t.getId().toString(),
-                t.getAmount().doubleValue(),
-                t.getType().name(),
+                t.getId(),
+                t.getAmount(),
+                t.getType(),
                 t.getDescription(),
-                t.getDate().toString(),
-                t.getUser().getId().toString(),
-                t.getCategory() != null ? t.getCategory().getId().toString() : null,
-                catSummary,
-                t.getCreatedAt().toString(),
-                t.getUpdatedAt().toString()
+                t.getDate(),
+                t.getUserId(),
+                t.getCategoryId(),
+                cat,
+                t.getCreatedAt(),
+                t.getUpdatedAt()
         );
     }
 }

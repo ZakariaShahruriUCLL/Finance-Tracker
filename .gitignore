@@ -3,3 +3,10 @@ node_modules/
 dist/
 .DS_Store
 .claude
+
+# Maven build output
+backend/target/
+backend/data/
+
+# Frontend build output
+frontend/dist/

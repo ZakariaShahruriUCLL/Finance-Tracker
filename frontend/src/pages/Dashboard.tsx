@@ -127,7 +127,7 @@ export default function Dashboard() {
                   <XAxis dataKey="label" tick={{ fontSize: 12 }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11 }} axisLine={false} tickLine={false}
                     tickFormatter={(v: number) => `$${v >= 1000 ? `${(v / 1000).toFixed(0)}k` : v}`} />
-                  <Tooltip formatter={(v: number) => fmt.format(v)} />
+                  <Tooltip formatter={(v) => typeof v === 'number' ? fmt.format(v) : v} />
                   <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
                   <Bar dataKey="income" name="Income" fill="#22c55e" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="expenses" name="Expenses" fill="#ef4444" radius={[4, 4, 0, 0]} />
@@ -155,7 +155,7 @@ export default function Dashboard() {
                           <Cell key={item.categoryId} fill={item.color} />
                         ))}
                       </Pie>
-                      <Tooltip formatter={(v: number) => fmt.format(v)} />
+                      <Tooltip formatter={(v) => typeof v === 'number' ? fmt.format(v) : v} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 6 }}>

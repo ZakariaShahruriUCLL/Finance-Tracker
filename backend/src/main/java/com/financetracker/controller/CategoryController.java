@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/categories")
@@ -23,33 +22,27 @@ public class CategoryController {
 
     @GetMapping
     public ResponseEntity<Map<String, List<CategoryDto>>> list(Authentication auth) {
-        List<CategoryDto> categories = categoryService.list(userId(auth));
-        return ResponseEntity.ok(Map.of("categories", categories));
+        return ResponseEntity.ok(Map.of("categories", categoryService.list(auth.getName())));
     }
 
     @PostMapping
     public ResponseEntity<Map<String, CategoryDto>> create(
             @Valid @RequestBody CategoryRequest request, Authentication auth) {
-        CategoryDto category = categoryService.create(userId(auth), request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("category", category));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(Map.of("category", categoryService.create(auth.getName(), request)));
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Map<String, CategoryDto>> update(
-            @PathVariable UUID id,
+            @PathVariable String id,
             @RequestBody CategoryRequest request,
             Authentication auth) {
-        CategoryDto category = categoryService.update(userId(auth), id, request);
-        return ResponseEntity.ok(Map.of("category", category));
+        return ResponseEntity.ok(Map.of("category", categoryService.update(auth.getName(), id, request)));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable UUID id, Authentication auth) {
-        categoryService.delete(userId(auth), id);
+    public ResponseEntity<Void> delete(@PathVariable String id, Authentication auth) {
+        categoryService.delete(auth.getName(), id);
         return ResponseEntity.noContent().build();
-    }
-
-    private UUID userId(Authentication auth) {
-        return UUID.fromString(auth.getName());
     }
 }

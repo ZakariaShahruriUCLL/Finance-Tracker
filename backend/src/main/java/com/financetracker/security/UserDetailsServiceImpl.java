@@ -10,7 +10,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -18,14 +17,14 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepository userRepository;
 
-    // The "username" stored in JWT subject is the user's UUID
+    // The "username" stored in JWT subject is the user's ID (String)
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException {
-        User user = userRepository.findById(UUID.fromString(userId))
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + userId));
 
         return new org.springframework.security.core.userdetails.User(
-                user.getId().toString(),
+                user.getId(),
                 user.getPasswordHash(),
                 List.of(new SimpleGrantedAuthority("ROLE_USER"))
         );

@@ -14,13 +14,13 @@ public record CategoryDto(
 ) {
     public static CategoryDto from(Category cat) {
         return new CategoryDto(
-                cat.getId().toString(),
+                cat.getId(),
                 cat.getName(),
                 cat.getColor(),
                 cat.getIcon(),
                 cat.isDefaultCategory(),
-                cat.getUser().getId().toString(),
-                cat.getCreatedAt().toString()
+                cat.getUserId(),
+                cat.getCreatedAt()
         );
     }
 }

@@ -1,48 +1,31 @@
 package com.financetracker.model;
 
-import jakarta.persistence.*;
+import com.azure.spring.data.cosmos.core.mapping.Container;
+import com.azure.spring.data.cosmos.core.mapping.PartitionKey;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.Id;
 
-import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.util.UUID;
-
-@Entity
-@Table(name = "transactions")
+@Container(containerName = "transactions")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class Transaction {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    private String id;
 
-    @Column(nullable = false, precision = 12, scale = 2)
-    private BigDecimal amount;
+    @PartitionKey
+    private String userId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private TransactionType type;
-
+    private double amount;
+    private String type;        // "INCOME" or "EXPENSE"
     private String description;
+    private String date;        // ISO date: "2026-04-20"
 
-    @Column(nullable = false)
-    private LocalDate date;
+    // Category fields embedded to avoid cross-container joins
+    private String categoryId;
+    private String categoryName;
+    private String categoryColor;
+    private String categoryIcon;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id")
-    private Category category;
-
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt;
-
-    @UpdateTimestamp
-    private Instant updatedAt;
+    private String createdAt;
+    private String updatedAt;
 }

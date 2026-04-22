@@ -6,12 +6,12 @@ import com.financetracker.exception.ConflictException;
 import com.financetracker.exception.ForbiddenException;
 import com.financetracker.exception.ResourceNotFoundException;
 import com.financetracker.model.Category;
-import com.financetracker.model.User;
 import com.financetracker.repository.CategoryRepository;
-import com.financetracker.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
 
@@ -20,33 +20,34 @@ import java.util.UUID;
 public class CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final UserRepository userRepository;
 
-    public List<CategoryDto> list(UUID userId) {
-        return categoryRepository.findByUserIdSorted(userId)
-                .stream()
+    public List<CategoryDto> list(String userId) {
+        return categoryRepository.findByUserId(userId).stream()
+                .sorted(Comparator.comparing(Category::isDefaultCategory).reversed()
+                        .thenComparing(Category::getName))
                 .map(CategoryDto::from)
                 .toList();
     }
 
-    public CategoryDto create(UUID userId, CategoryRequest request) {
-        if (categoryRepository.existsByNameAndUser_Id(request.name().trim(), userId)) {
+    public CategoryDto create(String userId, CategoryRequest request) {
+        if (categoryRepository.existsByNameAndUserId(request.name().trim(), userId)) {
             throw new ConflictException("A category with that name already exists");
         }
 
-        User user = userRepository.getReferenceById(userId);
         Category category = Category.builder()
+                .id(UUID.randomUUID().toString())
+                .userId(userId)
                 .name(request.name().trim())
                 .color(request.color() != null ? request.color() : "#6366f1")
                 .icon(request.icon())
                 .defaultCategory(false)
-                .user(user)
+                .createdAt(Instant.now().toString())
                 .build();
 
         return CategoryDto.from(categoryRepository.save(category));
     }
 
-    public CategoryDto update(UUID userId, UUID categoryId, CategoryRequest request) {
+    public CategoryDto update(String userId, String categoryId, CategoryRequest request) {
         Category category = findOwned(userId, categoryId);
 
         if (category.isDefaultCategory()) {
@@ -60,7 +61,7 @@ public class CategoryService {
         return CategoryDto.from(categoryRepository.save(category));
     }
 
-    public void delete(UUID userId, UUID categoryId) {
+    public void delete(String userId, String categoryId) {
         Category category = findOwned(userId, categoryId);
 
         if (category.isDefaultCategory()) {
@@ -70,8 +71,8 @@ public class CategoryService {
         categoryRepository.delete(category);
     }
 
-    private Category findOwned(UUID userId, UUID categoryId) {
-        return categoryRepository.findByIdAndUser_Id(categoryId, userId)
+    private Category findOwned(String userId, String categoryId) {
+        return categoryRepository.findByIdAndUserId(categoryId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found"));
     }
 }

@@ -14,9 +14,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -42,22 +43,27 @@ public class AuthService {
             new CategorySeed("Other",           "#6b7280", "📦")
     );
 
-    @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.email())) {
             throw new ConflictException("Email already in use");
         }
 
+        String now = Instant.now().toString();
+        String userId = UUID.randomUUID().toString();
+
         User user = User.builder()
+                .id(userId)
                 .email(request.email())
                 .name(request.name())
                 .passwordHash(passwordEncoder.encode(request.password()))
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
-        user = userRepository.saveAndFlush(user);
+        user = userRepository.save(user);
 
-        seedDefaultCategories(user);
+        seedDefaultCategories(userId);
 
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token, UserDto.from(user));
     }
 
@@ -69,24 +75,27 @@ public class AuthService {
             throw new BadCredentialsException("Invalid credentials");
         }
 
-        String token = jwtUtil.generateToken(user.getId().toString(), user.getEmail());
+        String token = jwtUtil.generateToken(user.getId(), user.getEmail());
         return new AuthResponse(token, UserDto.from(user));
     }
 
     public UserDto currentUser(String userId) {
-        return userRepository.findById(java.util.UUID.fromString(userId))
+        return userRepository.findById(userId)
                 .map(UserDto::from)
                 .orElseThrow(() -> new com.financetracker.exception.ResourceNotFoundException("User not found"));
     }
 
-    private void seedDefaultCategories(User user) {
+    private void seedDefaultCategories(String userId) {
+        String now = Instant.now().toString();
         List<Category> categories = PREDEFINED.stream()
                 .map(seed -> Category.builder()
+                        .id(UUID.randomUUID().toString())
+                        .userId(userId)
                         .name(seed.name())
                         .color(seed.color())
                         .icon(seed.icon())
                         .defaultCategory(true)
-                        .user(user)
+                        .createdAt(now)
                         .build())
                 .toList();
         categoryRepository.saveAll(categories);
