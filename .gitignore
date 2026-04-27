@@ -8,5 +8,8 @@ dist/
 backend/target/
 backend/data/
 
+# Azure Functions local secrets (mirrors .env for azure-functions:run)
+backend/local.settings.json
+
 # Frontend build output
 frontend/dist/

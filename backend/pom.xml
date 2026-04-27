@@ -20,6 +20,10 @@
   <properties>
     <java.version>21</java.version>
     <azure-spring.version>5.19.0</azure-spring.version>
+    <azure-functions-plugin.version>1.36.0</azure-functions-plugin.version>
+    <functionAppName>finflow-api</functionAppName>
+    <functionResourceGroup>CNE-handson</functionResourceGroup>
+    <functionRegion>francecentral</functionRegion>
   </properties>
 
   <dependencyManagement>
@@ -51,6 +55,14 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-validation</artifactId>
     </dependency>
+
+    <!-- Azure Functions Java API -->
+    <dependency>
+      <groupId>com.microsoft.azure.functions</groupId>
+      <artifactId>azure-functions-java-library</artifactId>
+      <version>3.1.0</version>
+    </dependency>
+
     <!-- JWT — jjwt 0.12.x -->
     <dependency>
       <groupId>io.jsonwebtoken</groupId>
@@ -69,6 +81,7 @@
       <version>0.12.6</version>
       <scope>runtime</scope>
     </dependency>
+
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
@@ -83,10 +96,16 @@
 
   <build>
     <plugins>
+      <!--
+        Produce two jars:
+          finance-tracker-0.0.1-SNAPSHOT.jar      — plain jar, used by azure-functions-maven-plugin
+          finance-tracker-0.0.1-SNAPSHOT-exec.jar — Spring Boot fat jar, used by spring-boot:run
+      -->
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
         <configuration>
+          <classifier>exec</classifier>
           <excludes>
             <exclude>
               <groupId>org.projectlombok</groupId>
@@ -94,6 +113,36 @@
             </exclude>
           </excludes>
         </configuration>
+      </plugin>
+
+      <!-- Packages and deploys to Azure Functions -->
+      <plugin>
+        <groupId>com.microsoft.azure</groupId>
+        <artifactId>azure-functions-maven-plugin</artifactId>
+        <version>${azure-functions-plugin.version}</version>
+        <configuration>
+          <appName>${functionAppName}</appName>
+          <resourceGroup>${functionResourceGroup}</resourceGroup>
+          <region>${functionRegion}</region>
+          <runtime>
+            <os>linux</os>
+            <javaVersion>21</javaVersion>
+          </runtime>
+          <appSettings>
+            <property>
+              <name>FUNCTIONS_EXTENSION_VERSION</name>
+              <value>~4</value>
+            </property>
+          </appSettings>
+        </configuration>
+        <executions>
+          <execution>
+            <id>package-functions</id>
+            <goals>
+              <goal>package</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
