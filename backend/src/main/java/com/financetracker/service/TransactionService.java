@@ -24,6 +24,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
+    private final BlobStorageService blobStorageService;
 
     public Map<String, Object> list(String userId, String type, String categoryId,
                                     Integer month, Integer year, int page, int limit) {
@@ -80,6 +81,7 @@ public class TransactionService {
                 .categoryName(category != null ? category.getName() : null)
                 .categoryColor(category != null ? category.getColor() : null)
                 .categoryIcon(category != null ? category.getIcon() : null)
+                .receiptBlobName(request.receiptBlobName())
                 .createdAt(now)
                 .updatedAt(now)
                 .build();
@@ -115,6 +117,14 @@ public class TransactionService {
             transaction.setCategoryColor(category != null ? category.getColor() : null);
             transaction.setCategoryIcon(category != null ? category.getIcon() : null);
         }
+        if (request.receiptBlobName() != null) {
+            String oldBlob = transaction.getReceiptBlobName();
+            String newBlob = request.receiptBlobName().isBlank() ? null : request.receiptBlobName();
+            if (oldBlob != null && !oldBlob.equals(newBlob)) {
+                blobStorageService.deleteIfExists(oldBlob);
+            }
+            transaction.setReceiptBlobName(newBlob);
+        }
         transaction.setUpdatedAt(Instant.now().toString());
 
         return TransactionDto.from(transactionRepository.save(transaction));
@@ -123,7 +133,19 @@ public class TransactionService {
     public void delete(String userId, String transactionId) {
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
+        if (transaction.getReceiptBlobName() != null) {
+            blobStorageService.deleteIfExists(transaction.getReceiptBlobName());
+        }
         transactionRepository.delete(transaction);
+    }
+
+    public String getReceiptUrl(String userId, String transactionId) {
+        Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
+        if (transaction.getReceiptBlobName() == null) {
+            throw new ResourceNotFoundException("No receipt attached to this transaction");
+        }
+        return blobStorageService.generateSasUrl(transaction.getReceiptBlobName());
     }
 
     public SummaryResponse summary(String userId, int month, int year) {

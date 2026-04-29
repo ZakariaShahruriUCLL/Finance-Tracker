@@ -11,6 +11,7 @@ public record TransactionDto(
         String userId,
         String categoryId,
         CategorySummary category,
+        String receiptBlobName,
         String createdAt,
         String updatedAt
 ) {
@@ -35,6 +36,7 @@ public record TransactionDto(
                 t.getUserId(),
                 t.getCategoryId(),
                 cat,
+                t.getReceiptBlobName(),
                 t.getCreatedAt(),
                 t.getUpdatedAt()
         );

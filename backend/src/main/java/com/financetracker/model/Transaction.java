@@ -26,6 +26,8 @@ public class Transaction {
     private String categoryColor;
     private String categoryIcon;
 
+    private String receiptBlobName;
+
     private String createdAt;
     private String updatedAt;
 }

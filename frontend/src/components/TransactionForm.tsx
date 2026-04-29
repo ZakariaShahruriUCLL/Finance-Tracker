@@ -1,5 +1,6 @@
-import { useState, useEffect, type FormEvent, type CSSProperties } from 'react';
+import { useState, useEffect, type FormEvent, type CSSProperties, useRef } from 'react';
 import type { Category, Transaction, TransactionFormData, TransactionType } from '../types';
+import { transactionsApi } from '../api/transactions';
 
 interface Props {
   initial?: Transaction | null;
@@ -28,8 +29,10 @@ export default function TransactionForm({ initial, categories, onSubmit, onCance
   const [categoryId, setCategoryId] = useState(initial?.categoryId ?? '');
   const [date, setDate] = useState(toDateValue(initial?.date));
   const [description, setDescription] = useState(initial?.description ?? '');
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setType(initial?.type ?? 'EXPENSE');
@@ -37,6 +40,8 @@ export default function TransactionForm({ initial, categories, onSubmit, onCance
     setCategoryId(initial?.categoryId ?? '');
     setDate(toDateValue(initial?.date));
     setDescription(initial?.description ?? '');
+    setReceiptFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
     setError('');
   }, [initial?.id]);
 
@@ -46,12 +51,18 @@ export default function TransactionForm({ initial, categories, onSubmit, onCance
     if (!amount || parseFloat(amount) <= 0) { setError('Amount must be greater than 0'); return; }
     setSaving(true);
     try {
+      let receiptBlobName: string | undefined;
+      if (receiptFile) {
+        const res = await transactionsApi.uploadReceipt(receiptFile);
+        receiptBlobName = res.data.blobName;
+      }
       await onSubmit({
         type,
         amount: parseFloat(amount),
         categoryId: categoryId || null,
         date,
         description: description.trim() || null,
+        receiptBlobName,
       });
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to save';
@@ -109,6 +120,24 @@ export default function TransactionForm({ initial, categories, onSubmit, onCance
         </label>
         <input style={inputStyle} type="text" placeholder="e.g. Grocery run"
           value={description} onChange={(e) => setDescription(e.target.value)} maxLength={200} />
+      </div>
+
+      <div style={{ marginBottom: 16 }}>
+        <label style={labelStyle}>
+          Receipt <span style={{ color: '#9ca3af', fontWeight: 400 }}>(optional — image or PDF, max 10 MB)</span>
+        </label>
+        {initial?.receiptBlobName && !receiptFile && (
+          <p style={{ fontSize: 12, color: '#6b7280', marginBottom: 6 }}>
+            A receipt is already attached. Select a new file to replace it.
+          </p>
+        )}
+        <input
+          ref={fileInputRef}
+          style={{ ...inputStyle, padding: '6px 10px' }}
+          type="file"
+          accept="image/*,application/pdf"
+          onChange={(e) => setReceiptFile(e.target.files?.[0] ?? null)}
+        />
       </div>
 
       {error && <p style={{ color: '#dc2626', fontSize: 13, marginBottom: 12 }}>{error}</p>}

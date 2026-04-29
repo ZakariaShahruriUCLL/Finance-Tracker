@@ -22,6 +22,12 @@ import java.util.logging.Logger;
  * port 8081. Each Azure Function invocation proxies the HTTP request to that
  * embedded server and forwards the response back. All existing controllers,
  * security filters, and Cosmos DB wiring remain completely unchanged.
+ *
+ * NOTE: The Azure Functions Java Worker only supports Optional<String> for
+ * HTTP trigger bodies — Optional<byte[]> crashes the worker for JSON requests.
+ * Binary file uploads are handled by base64-encoding in the client and
+ * decoding in the controller, so all bodies remain valid UTF-8 text through
+ * this proxy.
  */
 public class HttpTriggerFunction {
 

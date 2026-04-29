@@ -33,6 +33,7 @@ export interface Transaction {
   userId: string;
   categoryId: string | null;
   category: CategorySummary | null;
+  receiptBlobName: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -79,4 +80,5 @@ export interface TransactionFormData {
   categoryId: string | null;
   date: string;
   description: string | null;
+  receiptBlobName?: string | null;
 }

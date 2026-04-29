@@ -16,4 +16,22 @@ export const transactionsApi = {
   balance: () => api.get<Balance>('/transactions/balance'),
   categoryBreakdown: (params?: { month?: number; year?: number }) =>
     api.get<CategoryBreakdownItem[]>('/transactions/category-breakdown', { params }),
+  uploadReceipt: (file: File) => {
+    return new Promise<{ data: { blobName: string } }>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1];
+        api.post<{ blobName: string }>('/upload', {
+          filename: file.name,
+          contentType: file.type || 'application/octet-stream',
+          data: base64,
+        }).then(resolve).catch(reject);
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  },
+  getReceiptUrl: (id: string) =>
+    api.get<{ url: string }>(`/transactions/${id}/receipt-url`),
 };

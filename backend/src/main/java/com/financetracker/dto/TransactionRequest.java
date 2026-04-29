@@ -8,5 +8,6 @@ public record TransactionRequest(
         @NotBlank(message = "Type is required (INCOME or EXPENSE)") String type,
         String description,
         @NotBlank(message = "Date is required") String date,
-        String categoryId
+        String categoryId,
+        String receiptBlobName
 ) {}

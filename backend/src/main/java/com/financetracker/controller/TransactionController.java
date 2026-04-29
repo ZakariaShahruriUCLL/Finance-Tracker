@@ -90,4 +90,11 @@ public class TransactionController {
         transactionService.delete(auth.getName(), id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/{id}/receipt-url")
+    public ResponseEntity<Map<String, String>> receiptUrl(
+            @PathVariable String id, Authentication auth) {
+        String url = transactionService.getReceiptUrl(auth.getName(), id);
+        return ResponseEntity.ok(Map.of("url", url));
+    }
 }
