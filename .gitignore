@@ -13,3 +13,6 @@ backend/local.settings.json
 
 # Frontend build output
 frontend/dist/
+
+# Bicep parameter file (contains secrets)
+infrastructure/main.bicepparam

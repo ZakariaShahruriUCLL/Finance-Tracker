@@ -1,0 +1,47 @@
+param location string
+param functionAppName string
+param storageConnectionString string
+param cosmosEndpoint string
+param cosmosKey string
+
+@secure()
+param jwtSecret string
+
+resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
+  name: '${functionAppName}-plan'
+  location: location
+  sku: {
+    name: 'Y1'
+    tier: 'Dynamic'
+  }
+  kind: 'linux'
+  properties: {
+    reserved: true
+  }
+}
+
+resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
+  name: functionAppName
+  location: location
+  kind: 'functionapp,linux'
+  properties: {
+    serverFarmId: appServicePlan.id
+    siteConfig: {
+      linuxFxVersion: 'Java|21'
+      appSettings: [
+        { name: 'AzureWebJobsStorage', value: storageConnectionString }
+        { name: 'FUNCTIONS_WORKER_RUNTIME', value: 'java' }
+        { name: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
+        { name: 'AZURE_COSMOS_ENDPOINT', value: cosmosEndpoint }
+        { name: 'AZURE_COSMOS_KEY', value: cosmosKey }
+        { name: 'JWT_SECRET', value: jwtSecret }
+        { name: 'AZURE_STORAGE_CONNECTION_STRING', value: storageConnectionString }
+        { name: 'AZURE_STORAGE_CONTAINER_NAME', value: 'receipts' }
+      ]
+    }
+    httpsOnly: true
+  }
+}
+
+output functionAppName string = functionApp.name
+output functionAppUrl string = 'https://${functionApp.properties.defaultHostName}'
