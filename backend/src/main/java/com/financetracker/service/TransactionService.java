@@ -28,6 +28,7 @@ public class TransactionService {
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
     private final BlobStorageService blobStorageService;
+    private final TransactionEventPublisher eventPublisher;
 
     @Cacheable(value = "transactions",
                key = "#userId + ':' + #type + ':' + #categoryId + ':' + #month + ':' + #year + ':' + #page + ':' + #limit")
@@ -97,7 +98,11 @@ public class TransactionService {
                 .updatedAt(now)
                 .build();
 
-        return TransactionDto.from(transactionRepository.save(transaction));
+        TransactionDto dto = TransactionDto.from(transactionRepository.save(transaction));
+        eventPublisher.publish("transaction.created", userId, transaction.getId(),
+                transaction.getAmount(), transaction.getType(),
+                transaction.getCategoryName(), transaction.getDate());
+        return dto;
     }
 
     public TransactionDto getOne(String userId, String transactionId) {
@@ -144,7 +149,11 @@ public class TransactionService {
         }
         transaction.setUpdatedAt(Instant.now().toString());
 
-        return TransactionDto.from(transactionRepository.save(transaction));
+        TransactionDto dto = TransactionDto.from(transactionRepository.save(transaction));
+        eventPublisher.publish("transaction.updated", userId, transactionId,
+                transaction.getAmount(), transaction.getType(),
+                transaction.getCategoryName(), transaction.getDate());
+        return dto;
     }
 
     @Caching(evict = {
@@ -160,6 +169,9 @@ public class TransactionService {
             blobStorageService.deleteIfExists(transaction.getReceiptBlobName());
         }
         transactionRepository.delete(transaction);
+        eventPublisher.publish("transaction.deleted", userId, transactionId,
+                transaction.getAmount(), transaction.getType(),
+                transaction.getCategoryName(), transaction.getDate());
     }
 
     public String getReceiptUrl(String userId, String transactionId) {

@@ -5,6 +5,7 @@ param storageAccountName string = 'finflow'
 param cosmosAccountName string = 'cne-handson-finflow'
 param functionAppName string = 'finflow-api'
 param redisName string = 'finflow-cache'
+param serviceBusName string = 'finflow-bus'
 
 @secure()
 param jwtSecret string
@@ -33,6 +34,14 @@ module redis 'modules/redis.bicep' = {
   }
 }
 
+module servicebus 'modules/servicebus.bicep' = {
+  name: 'servicebus'
+  params: {
+    location: location
+    namespaceName: serviceBusName
+  }
+}
+
 module functionapp 'modules/functionapp.bicep' = {
   name: 'functionapp'
   params: {
@@ -45,6 +54,7 @@ module functionapp 'modules/functionapp.bicep' = {
     redisHostName: redis.outputs.redisHostName
     redisSslPort: redis.outputs.redisSslPort
     redisPrimaryKey: redis.outputs.redisPrimaryKey
+    serviceBusConnectionString: servicebus.outputs.connectionString
   }
 }
 

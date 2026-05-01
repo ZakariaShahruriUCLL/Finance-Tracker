@@ -12,6 +12,9 @@ param jwtSecret string
 @secure()
 param redisPrimaryKey string
 
+@secure()
+param serviceBusConnectionString string
+
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${functionAppName}-plan'
   location: location
@@ -46,6 +49,8 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'REDIS_PORT', value: string(redisSslPort) }
         { name: 'REDIS_PASSWORD', value: redisPrimaryKey }
         { name: 'REDIS_SSL', value: 'true' }
+        { name: 'SERVICE_BUS_CONNECTION_STRING', value: serviceBusConnectionString }
+        { name: 'BUDGET_MONTHLY_LIMIT', value: '500.0' }
       ]
     }
     httpsOnly: true
