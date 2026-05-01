@@ -3,9 +3,14 @@ param functionAppName string
 param storageConnectionString string
 param cosmosEndpoint string
 param cosmosKey string
+param redisHostName string
+param redisSslPort int
 
 @secure()
 param jwtSecret string
+
+@secure()
+param redisPrimaryKey string
 
 resource appServicePlan 'Microsoft.Web/serverfarms@2023-12-01' = {
   name: '${functionAppName}-plan'
@@ -37,6 +42,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'JWT_SECRET', value: jwtSecret }
         { name: 'AZURE_STORAGE_CONNECTION_STRING', value: storageConnectionString }
         { name: 'AZURE_STORAGE_CONTAINER_NAME', value: 'receipts' }
+        { name: 'REDIS_HOST', value: redisHostName }
+        { name: 'REDIS_PORT', value: string(redisSslPort) }
+        { name: 'REDIS_PASSWORD', value: redisPrimaryKey }
+        { name: 'REDIS_SSL', value: 'true' }
       ]
     }
     httpsOnly: true

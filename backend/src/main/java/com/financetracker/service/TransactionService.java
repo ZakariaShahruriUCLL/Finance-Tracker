@@ -11,6 +11,9 @@ import com.financetracker.model.Transaction;
 import com.financetracker.repository.CategoryRepository;
 import com.financetracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -26,6 +29,8 @@ public class TransactionService {
     private final CategoryRepository categoryRepository;
     private final BlobStorageService blobStorageService;
 
+    @Cacheable(value = "transactions",
+               key = "#userId + ':' + #type + ':' + #categoryId + ':' + #month + ':' + #year + ':' + #page + ':' + #limit")
     public Map<String, Object> list(String userId, String type, String categoryId,
                                     Integer month, Integer year, int page, int limit) {
         List<Transaction> source = fetchFiltered(userId, month, year);
@@ -64,6 +69,12 @@ public class TransactionService {
         return result;
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "transactions", allEntries = true),
+        @CacheEvict(value = "summary",      allEntries = true),
+        @CacheEvict(value = "balance",      allEntries = true),
+        @CacheEvict(value = "breakdown",    allEntries = true)
+    })
     public TransactionDto create(String userId, TransactionRequest request) {
         validateType(request.type());
 
@@ -95,6 +106,12 @@ public class TransactionService {
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "transactions", allEntries = true),
+        @CacheEvict(value = "summary",      allEntries = true),
+        @CacheEvict(value = "balance",      allEntries = true),
+        @CacheEvict(value = "breakdown",    allEntries = true)
+    })
     public TransactionDto update(String userId, String transactionId, TransactionRequest request) {
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
@@ -130,6 +147,12 @@ public class TransactionService {
         return TransactionDto.from(transactionRepository.save(transaction));
     }
 
+    @Caching(evict = {
+        @CacheEvict(value = "transactions", allEntries = true),
+        @CacheEvict(value = "summary",      allEntries = true),
+        @CacheEvict(value = "balance",      allEntries = true),
+        @CacheEvict(value = "breakdown",    allEntries = true)
+    })
     public void delete(String userId, String transactionId) {
         Transaction transaction = transactionRepository.findByIdAndUserId(transactionId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Transaction not found"));
@@ -148,6 +171,7 @@ public class TransactionService {
         return blobStorageService.generateSasUrl(transaction.getReceiptBlobName());
     }
 
+    @Cacheable(value = "summary", key = "#userId + ':' + #month + ':' + #year")
     public SummaryResponse summary(String userId, int month, int year) {
         List<Transaction> txs = fetchForMonth(userId, month, year);
 
@@ -159,6 +183,7 @@ public class TransactionService {
         return new SummaryResponse(month, year, income, expenses, income - expenses, incomeCount, expenseCount);
     }
 
+    @Cacheable(value = "balance", key = "#userId")
     public BalanceResponse allTimeBalance(String userId) {
         List<Transaction> all = transactionRepository.findByUserId(userId);
         double income = all.stream().filter(t -> "INCOME".equals(t.getType())).mapToDouble(Transaction::getAmount).sum();
@@ -166,6 +191,7 @@ public class TransactionService {
         return new BalanceResponse(income, expenses, income - expenses);
     }
 
+    @Cacheable(value = "breakdown", key = "#userId + ':' + #month + ':' + #year")
     public List<CategoryBreakdownItem> categoryBreakdown(String userId, int month, int year) {
         List<Transaction> txs = fetchForMonth(userId, month, year);
 

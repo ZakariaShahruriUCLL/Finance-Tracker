@@ -4,6 +4,7 @@ param location string = resourceGroup().location
 param storageAccountName string = 'finflow'
 param cosmosAccountName string = 'cne-handson-finflow'
 param functionAppName string = 'finflow-api'
+param redisName string = 'finflow-cache'
 
 @secure()
 param jwtSecret string
@@ -24,6 +25,14 @@ module cosmos 'modules/cosmos.bicep' = {
   }
 }
 
+module redis 'modules/redis.bicep' = {
+  name: 'redis'
+  params: {
+    location: location
+    redisName: redisName
+  }
+}
+
 module functionapp 'modules/functionapp.bicep' = {
   name: 'functionapp'
   params: {
@@ -33,6 +42,9 @@ module functionapp 'modules/functionapp.bicep' = {
     cosmosEndpoint: cosmos.outputs.endpoint
     cosmosKey: cosmos.outputs.primaryKey
     jwtSecret: jwtSecret
+    redisHostName: redis.outputs.redisHostName
+    redisSslPort: redis.outputs.redisSslPort
+    redisPrimaryKey: redis.outputs.redisPrimaryKey
   }
 }
 
