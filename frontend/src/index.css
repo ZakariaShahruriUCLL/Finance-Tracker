@@ -1,0 +1,122 @@
+* { box-sizing: border-box; }
+
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ── Light mode tokens ── */
+:root {
+  --body-gradient:
+    radial-gradient(circle at 15% 20%, #c4b5fd 0%, transparent 45%),
+    radial-gradient(circle at 85% 25%, #fbcfe8 0%, transparent 45%),
+    radial-gradient(circle at 75% 85%, #93c5fd 0%, transparent 45%),
+    radial-gradient(circle at 20% 80%, #fde68a 0%, transparent 40%),
+    linear-gradient(135deg, #f5f3ff 0%, #fdf4ff 50%, #eff6ff 100%);
+
+  --glass-bg:          rgba(255, 255, 255, 0.55);
+  --glass-bg-subtle:   rgba(255, 255, 255, 0.40);
+  --glass-nav-bg:      rgba(255, 255, 255, 0.60);
+  --glass-input-bg:    rgba(255, 255, 255, 0.55);
+  --glass-button-bg:   rgba(255, 255, 255, 0.45);
+  --glass-border:      rgba(255, 255, 255, 0.50);
+  --glass-border-strong: rgba(255, 255, 255, 0.60);
+  --glass-shadow:        0 8px 32px rgba(99, 102, 241, 0.12);
+  --glass-shadow-subtle: 0 4px 20px rgba(99, 102, 241, 0.08);
+  --glass-nav-shadow:    0 4px 24px rgba(99, 102, 241, 0.06);
+
+  --text-primary:   #1f2937;
+  --text-secondary: #374151;
+  --text-muted:     #6b7280;
+  --text-faint:     #9ca3af;
+
+  --color-income:           #15803d;
+  --color-expense:          #b91c1c;
+  --color-balance-positive: #1d4ed8;
+
+  --bg-income-toggle:  rgba(220, 252, 231, 0.85);
+  --bg-expense-toggle: rgba(254, 226, 226, 0.85);
+
+  --danger-bg:     rgba(254, 226, 226, 0.60);
+  --danger-border: rgba(252, 165, 165, 0.50);
+  --danger-color:  #b91c1c;
+
+  --border-divider: rgba(229, 231, 235, 0.70);
+  --border-row:     rgba(243, 244, 246, 0.60);
+
+  --skeleton-base:      rgba(229, 231, 235, 0.60);
+  --skeleton-highlight: rgba(243, 244, 246, 0.85);
+}
+
+/* ── Dark mode tokens ── */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --body-gradient:
+    radial-gradient(circle at 15% 20%, rgba(109, 40, 217, 0.75) 0%, transparent 45%),
+    radial-gradient(circle at 85% 25%, rgba(157, 23, 77,  0.65) 0%, transparent 45%),
+    radial-gradient(circle at 75% 85%, rgba(30,  64, 175, 0.65) 0%, transparent 45%),
+    radial-gradient(circle at 20% 80%, rgba(49,  46, 129, 0.55) 0%, transparent 40%),
+    linear-gradient(135deg, #07050f 0%, #100d20 50%, #080b18 100%);
+
+  --glass-bg:          rgba(255, 255, 255, 0.07);
+  --glass-bg-subtle:   rgba(255, 255, 255, 0.05);
+  --glass-nav-bg:      rgba(5, 4, 20, 0.75);
+  --glass-input-bg:    rgba(255, 255, 255, 0.07);
+  --glass-button-bg:   rgba(255, 255, 255, 0.10);
+  --glass-border:      rgba(255, 255, 255, 0.12);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-shadow:        0 8px 32px rgba(0, 0, 0, 0.65);
+  --glass-shadow-subtle: 0 4px 20px rgba(0, 0, 0, 0.55);
+  --glass-nav-shadow:    0 4px 24px rgba(0, 0, 0, 0.55);
+
+  --text-primary:   #f3f4f6;
+  --text-secondary: #e5e7eb;
+  --text-muted:     #9ca3af;
+  --text-faint:     #6b7280;
+
+  --color-income:           #4ade80;
+  --color-expense:          #f87171;
+  --color-balance-positive: #93c5fd;
+
+  --bg-income-toggle:  rgba(20,  83,  45, 0.80);
+  --bg-expense-toggle: rgba(127, 29,  29, 0.80);
+
+  --danger-bg:     rgba(127, 29, 29, 0.50);
+  --danger-border: rgba(239, 68, 68, 0.25);
+  --danger-color:  #fca5a5;
+
+  --border-divider: rgba(255, 255, 255, 0.10);
+  --border-row:     rgba(255, 255, 255, 0.04);
+
+  --skeleton-base:      rgba(255, 255, 255, 0.05);
+  --skeleton-highlight: rgba(255, 255, 255, 0.11);
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+  color: var(--text-primary);
+  background: var(--body-gradient);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+a { color: #818cf8; }
+
+input, select, textarea, button { font-family: inherit; }
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: rgba(99, 102, 241, 0.6) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+}
+
+::placeholder { color: var(--text-faint); }
+
+@keyframes skeleton-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
