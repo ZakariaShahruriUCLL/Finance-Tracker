@@ -29,6 +29,7 @@ resource receiptsContainer 'Microsoft.Storage/storageAccounts/blobServices/conta
 }
 
 output storageAccountName string = storageAccount.name
+output staticWebUrl string = storageAccount.properties.primaryEndpoints.web
 
 @secure()
 output connectionString string = 'DefaultEndpointsProtocol=https;AccountName=${storageAccount.name};AccountKey=${storageAccount.listKeys().keys[0].value};EndpointSuffix=${environment().suffixes.storage}'

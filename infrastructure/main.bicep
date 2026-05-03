@@ -42,6 +42,9 @@ module servicebus 'modules/servicebus.bicep' = {
   }
 }
 
+var staticWebUrl = storage.outputs.staticWebUrl
+var frontendOrigin = endsWith(staticWebUrl, '/') ? substring(staticWebUrl, 0, max(0, length(staticWebUrl) - 1)) : staticWebUrl
+
 module functionapp 'modules/functionapp.bicep' = {
   name: 'functionapp'
   params: {
@@ -55,7 +58,9 @@ module functionapp 'modules/functionapp.bicep' = {
     redisSslPort: redis.outputs.redisSslPort
     redisPrimaryKey: redis.outputs.redisPrimaryKey
     serviceBusConnectionString: servicebus.outputs.connectionString
+    frontendUrl: frontendOrigin
   }
 }
 
 output functionAppUrl string = functionapp.outputs.functionAppUrl
+output frontendUrl string = frontendOrigin

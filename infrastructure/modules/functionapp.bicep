@@ -5,6 +5,7 @@ param cosmosEndpoint string
 param cosmosKey string
 param redisHostName string
 param redisSslPort int
+param frontendUrl string
 
 @secure()
 param jwtSecret string
@@ -51,6 +52,7 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
         { name: 'REDIS_SSL', value: 'true' }
         { name: 'SERVICE_BUS_CONNECTION_STRING', value: serviceBusConnectionString }
         { name: 'BUDGET_MONTHLY_LIMIT', value: '500.0' }
+        { name: 'FRONTEND_URL', value: frontendUrl }
       ]
     }
     httpsOnly: true
