@@ -5,6 +5,7 @@ import {
   PieChart, Pie, Cell,
 } from 'recharts';
 import Layout from '../components/Layout';
+import DashboardSkeleton from '../components/DashboardSkeleton';
 import { transactionsApi } from '../api/transactions';
 import type { Balance, CategoryBreakdownItem, Summary } from '../types';
 
@@ -82,7 +83,7 @@ export default function Dashboard() {
         </Link>
       </div>
 
-      {loading ? <p style={{ color: '#9ca3af' }}>Loading…</p> : (
+      {loading ? <DashboardSkeleton /> : (
         <>
           {/* ── All-time balance ── */}
           <div style={{ background: 'linear-gradient(135deg, #4f46e5, #7c3aed)', borderRadius: 12,

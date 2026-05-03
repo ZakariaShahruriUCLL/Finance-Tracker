@@ -1,5 +1,6 @@
 import { useState, useEffect, type FormEvent, type CSSProperties } from 'react';
 import Layout from '../components/Layout';
+import CategoriesSkeleton from '../components/CategoriesSkeleton';
 import { categoriesApi } from '../api/categories';
 import type { Category } from '../types';
 
@@ -116,7 +117,7 @@ export default function Categories() {
       </div>
 
       {error && <p style={{ color: '#dc2626' }}>{error}</p>}
-      {loading ? <p style={{ color: '#9ca3af' }}>Loading…</p> : (
+      {loading ? <CategoriesSkeleton /> : (
         <>
           <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 12 }}>Custom ({custom.length})</h2>
           {custom.length === 0

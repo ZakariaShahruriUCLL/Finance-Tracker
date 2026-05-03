@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import Layout from '../components/Layout';
 import TransactionForm from '../components/TransactionForm';
 import TransactionList from '../components/TransactionList';
+import TransactionListSkeleton from '../components/TransactionListSkeleton';
 import { transactionsApi } from '../api/transactions';
 import { categoriesApi } from '../api/categories';
 import type { Category, Transaction, TransactionFormData } from '../types';
@@ -109,7 +110,7 @@ export default function Transactions() {
 
       {error && <p style={{ color: '#dc2626', marginBottom: 12 }}>{error}</p>}
 
-      {loading ? <p style={{ color: '#9ca3af' }}>Loading…</p> : (
+      {loading ? <TransactionListSkeleton /> : (
         <>
           <TransactionList transactions={transactions}
             onEdit={(t) => { setEditing(t); setShowForm(true); }}
