@@ -1,45 +1,36 @@
 import type { CSSProperties } from 'react';
 
 export const glassCard: CSSProperties = {
-  background: 'var(--glass-bg)',
-  backdropFilter: 'blur(20px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-  border: '1px solid var(--glass-border)',
-  boxShadow: 'var(--glass-shadow)',
+  background: 'var(--card-bg)',
+  border: '1px solid var(--card-border)',
+  boxShadow: 'var(--card-shadow)',
   borderRadius: 16,
 };
 
 export const glassCardSubtle: CSSProperties = {
-  background: 'var(--glass-bg-subtle)',
-  backdropFilter: 'blur(14px) saturate(160%)',
-  WebkitBackdropFilter: 'blur(14px) saturate(160%)',
-  border: '1px solid var(--glass-border)',
-  boxShadow: 'var(--glass-shadow-subtle)',
+  background: 'var(--card-bg-subtle)',
+  border: '1px solid var(--card-border)',
+  boxShadow: 'var(--card-shadow)',
   borderRadius: 12,
 };
 
 export const glassNav: CSSProperties = {
-  background: 'var(--glass-nav-bg)',
-  backdropFilter: 'blur(24px) saturate(180%)',
-  WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-  borderBottom: '1px solid var(--glass-border)',
-  boxShadow: 'var(--glass-nav-shadow)',
+  background: 'var(--nav-bg)',
+  backdropFilter: 'blur(16px)',
+  WebkitBackdropFilter: 'blur(16px)',
+  borderBottom: '1px solid var(--nav-border)',
 };
 
 export const glassInput: CSSProperties = {
-  background: 'var(--glass-input-bg)',
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
-  border: '1px solid var(--glass-border-strong)',
+  background: 'var(--input-bg)',
+  border: '1px solid var(--input-border)',
   borderRadius: 8,
   color: 'var(--text-primary)',
 };
 
 export const glassButton: CSSProperties = {
-  background: 'var(--glass-button-bg)',
-  backdropFilter: 'blur(10px)',
-  WebkitBackdropFilter: 'blur(10px)',
-  border: '1px solid var(--glass-border)',
+  background: 'var(--button-bg)',
+  border: '1px solid var(--button-border)',
   borderRadius: 8,
   color: 'var(--text-primary)',
   cursor: 'pointer',
@@ -50,15 +41,13 @@ export const primaryButton: CSSProperties = {
   border: 'none',
   borderRadius: 8,
   color: '#fff',
-  fontWeight: 500,
+  fontWeight: 600,
   boxShadow: '0 4px 16px rgba(99, 102, 241, 0.35)',
   cursor: 'pointer',
 };
 
 export const dangerButton: CSSProperties = {
   background: 'var(--danger-bg)',
-  backdropFilter: 'blur(8px)',
-  WebkitBackdropFilter: 'blur(8px)',
   border: '1px solid var(--danger-border)',
   borderRadius: 8,
   color: 'var(--danger-color)',
