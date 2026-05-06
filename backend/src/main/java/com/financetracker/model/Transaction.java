@@ -20,7 +20,6 @@ public class Transaction {
     private String description;
     private String date;        // ISO date: "2026-04-20"
 
-    // Category fields embedded to avoid cross-container joins
     private String categoryId;
     private String categoryName;
     private String categoryColor;

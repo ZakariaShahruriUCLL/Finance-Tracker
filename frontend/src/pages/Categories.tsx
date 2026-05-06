@@ -145,7 +145,6 @@ export default function Categories() {
 
       {loading ? <CategoriesSkeleton /> : (
         <>
-          {/* ── Custom categories ── */}
           <div style={{ marginBottom: 36 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <Pencil size={14} strokeWidth={2} color="var(--text-muted)" />
@@ -176,7 +175,6 @@ export default function Categories() {
             )}
           </div>
 
-          {/* ── Predefined categories ── */}
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
               <Lock size={14} strokeWidth={2} color="var(--text-muted)" />

@@ -11,7 +11,7 @@ import {
 import Layout from '../components/Layout';
 import DashboardSkeleton from '../components/DashboardSkeleton';
 import { transactionsApi } from '../api/transactions';
-import type { Balance, CategoryBreakdownItem, Summary, Transaction } from '../types';
+import type { Balance, BudgetStatus, CategoryBreakdownItem, Summary, Transaction } from '../types';
 import { glassCard } from '../styles/glass';
 
 const fmt = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
@@ -81,6 +81,7 @@ function last6Months() {
 
 export default function Dashboard() {
   const [balance, setBalance] = useState<Balance | null>(null);
+  const [budgetStatus, setBudgetStatus] = useState<BudgetStatus | null>(null);
   const [monthlySummaries, setMonthlySummaries] = useState<(Summary & { label: string })[]>([]);
   const [breakdown, setBreakdown] = useState<CategoryBreakdownItem[]>([]);
   const [dailySpending, setDailySpending] = useState<{ day: string; amount: number }[]>([]);
@@ -95,37 +96,46 @@ export default function Dashboard() {
 
   useEffect(() => {
     const months = last6Months();
-    Promise.all([
+    Promise.allSettled([
       transactionsApi.balance(),
       transactionsApi.categoryBreakdown({ month: currentMonth, year: currentYear }),
       transactionsApi.list({ month: currentMonth, year: currentYear, limit: 100 }),
+      transactionsApi.budgetStatus({ month: currentMonth, year: currentYear }),
       ...months.map(({ month, year }) => transactionsApi.summary({ month, year })),
     ])
-      .then(([balanceRes, breakdownRes, txRes, ...summaryResponses]) => {
-        setBalance(balanceRes.data);
-        setBreakdown(breakdownRes.data);
+      .then(([balanceResult, breakdownResult, txResult, budgetResult, ...summaryResults]) => {
+        if (balanceResult.status === 'fulfilled') setBalance(balanceResult.value.data);
+        if (breakdownResult.status === 'fulfilled') {
+          setBreakdown(breakdownResult.value.data);
+        } else {
+          console.error('[Dashboard] categoryBreakdown API failed:', breakdownResult.reason);
+        }
+        if (budgetResult.status === 'fulfilled') setBudgetStatus(budgetResult.value.data);
 
-        const byDay: Record<number, number> = {};
-        (txRes.data.transactions as Transaction[]).forEach((tx) => {
-          if (tx.type !== 'EXPENSE') return;
-          const d = new Date(tx.date).getDate();
-          byDay[d] = (byDay[d] ?? 0) + tx.amount;
-        });
-        setDailySpending(
-          Array.from({ length: daysInMonth }, (_, i) => ({
-            day: String(i + 1),
-            amount: +(byDay[i + 1] ?? 0).toFixed(2),
-          }))
-        );
+        if (txResult.status === 'fulfilled') {
+          const byDay: Record<number, number> = {};
+          (txResult.value.data.transactions as Transaction[]).forEach((tx) => {
+            if (tx.type !== 'EXPENSE') return;
+            const d = new Date(tx.date).getDate();
+            byDay[d] = (byDay[d] ?? 0) + tx.amount;
+          });
+          setDailySpending(
+            Array.from({ length: daysInMonth }, (_, i) => ({
+              day: String(i + 1),
+              amount: +(byDay[i + 1] ?? 0).toFixed(2),
+            }))
+          );
+        }
 
-        setMonthlySummaries(
-          summaryResponses.map((r, i) => ({
-            ...r.data,
-            label: buildMonthLabel(months[i].year, months[i].month),
-          }))
-        );
+        const summaries = summaryResults
+          .map((result, i) =>
+            result.status === 'fulfilled'
+              ? { ...result.value.data, label: buildMonthLabel(months[i].year, months[i].month) }
+              : null
+          )
+          .filter((s): s is Summary & { label: string } => s !== null);
+        setMonthlySummaries(summaries);
       })
-      .catch(() => {})
       .finally(() => setLoading(false));
   }, []);
 
@@ -177,10 +187,27 @@ export default function Dashboard() {
         </Link>
       </div>
 
+      {budgetStatus?.exceeded && (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)',
+          borderRadius: 12, padding: '12px 18px', marginBottom: 18,
+        }}>
+          <TrendingDown size={18} color="#ef4444" strokeWidth={2} />
+          <div>
+            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: '#ef4444' }}>
+              Monthly budget exceeded — {budgetStatus.percentage}% of ${budgetStatus.monthlyLimit} limit used
+            </p>
+            <p style={{ margin: '2px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+              ${budgetStatus.totalExpenses.toFixed(2)} spent this month
+            </p>
+          </div>
+        </div>
+      )}
+
       {loading ? <DashboardSkeleton /> : (
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 14 }}>
 
-          {/* ── Hero balance (full width) ── */}
           <div style={{
             gridColumn: '1 / -1',
             background: 'linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #be185d 100%)',
@@ -212,7 +239,6 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ── Stat cards (full width, flex inside) ── */}
           <div style={{ gridColumn: '1 / -1', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
             <StatCard label="Income" value={fmt.format(currentSummary?.income ?? 0)}
               color="var(--color-income)" icon={<TrendingUp size={18} strokeWidth={1.75} />}
@@ -234,7 +260,6 @@ export default function Dashboard() {
               sub={`Based on ${today} days`} />
           </div>
 
-          {/* ── Income vs Expenses (2/3 width) ── */}
           <div style={{ gridColumn: '1 / 3', ...glassCard, padding: '22px 20px' }}>
             <CardTitle icon={<BarChart2 size={15} strokeWidth={2} />} title="Income vs Expenses" subtitle="Last 6 months" />
             <ResponsiveContainer width="100%" height={210}>
@@ -250,7 +275,6 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* ── Category donut (1/3 width) ── */}
           <div style={{ ...glassCard, padding: '22px 20px' }}>
             <CardTitle icon={<PieChartIcon size={15} strokeWidth={1.75} />} title="Spending by Category" subtitle={monthName} />
             {breakdown.length === 0 ? (
@@ -284,7 +308,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* ── Monthly P&L (1/3 width) ── */}
           <div style={{ ...glassCard, padding: '22px 20px' }}>
             <CardTitle icon={<Activity size={15} strokeWidth={2} />} title="Monthly P&L" subtitle="Net · purple = savings %" />
             <ResponsiveContainer width="100%" height={200}>
@@ -310,7 +333,6 @@ export default function Dashboard() {
             </ResponsiveContainer>
           </div>
 
-          {/* ── Daily spending (2/3 width) ── */}
           <div style={{ gridColumn: '2 / 4', ...glassCard, padding: '22px 20px' }}>
             <CardTitle icon={<CalendarDays size={15} strokeWidth={1.75} />} title="Daily Spending" subtitle={`Expenses by day — ${monthName}`} />
             {dailySpending.every((d) => d.amount === 0) ? (
@@ -333,7 +355,6 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* ── Category progress bars (full width) ── */}
           {breakdown.length > 0 && (
             <div style={{ gridColumn: '1 / -1', ...glassCard, padding: '22px 28px' }}>
               <CardTitle icon={<Tags size={15} strokeWidth={2} />} title="Category Breakdown" subtitle={monthName} />

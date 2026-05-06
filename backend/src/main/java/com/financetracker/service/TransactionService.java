@@ -1,6 +1,7 @@
 package com.financetracker.service;
 
 import com.financetracker.dto.BalanceResponse;
+import com.financetracker.dto.BudgetStatusResponse;
 import com.financetracker.dto.CategoryBreakdownItem;
 import com.financetracker.dto.SummaryResponse;
 import com.financetracker.dto.TransactionDto;
@@ -11,6 +12,7 @@ import com.financetracker.model.Transaction;
 import com.financetracker.repository.CategoryRepository;
 import com.financetracker.repository.TransactionRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
@@ -24,6 +26,9 @@ import java.util.stream.Stream;
 @Service
 @RequiredArgsConstructor
 public class TransactionService {
+
+    @Value("${budget.monthly-limit:500.0}")
+    private double monthlyLimit;
 
     private final TransactionRepository transactionRepository;
     private final CategoryRepository categoryRepository;
@@ -209,10 +214,14 @@ public class TransactionService {
 
         Map<String, CategoryBreakdownItem> map = new LinkedHashMap<>();
         for (Transaction t : txs) {
-            if (!"EXPENSE".equals(t.getType()) || t.getCategoryId() == null) continue;
+            if (!"EXPENSE".equals(t.getType())) continue;
+            String catId    = t.getCategoryId()    != null ? t.getCategoryId()    : "__uncategorized__";
+            String catName  = t.getCategoryName()  != null ? t.getCategoryName()  : "Uncategorized";
+            String catColor = t.getCategoryColor() != null ? t.getCategoryColor() : "#9ca3af";
+            String catIcon  = t.getCategoryIcon();
             map.merge(
-                    t.getCategoryId(),
-                    new CategoryBreakdownItem(t.getCategoryId(), t.getCategoryName(), t.getCategoryColor(), t.getCategoryIcon(), t.getAmount()),
+                    catId,
+                    new CategoryBreakdownItem(catId, catName, catColor, catIcon, t.getAmount()),
                     (a, b) -> new CategoryBreakdownItem(a.categoryId(), a.name(), a.color(), a.icon(), a.amount() + b.amount())
             );
         }
@@ -222,7 +231,12 @@ public class TransactionService {
                 .toList();
     }
 
-    // ── helpers ──────────────────────────────────────────────────────────────
+    public BudgetStatusResponse budgetStatus(String userId, int month, int year) {
+        SummaryResponse s = summary(userId, month, year);
+        boolean exceeded = s.expenses() > monthlyLimit;
+        int pct = monthlyLimit > 0 ? (int) Math.round((s.expenses() / monthlyLimit) * 100) : 0;
+        return new BudgetStatusResponse(month, year, s.expenses(), monthlyLimit, exceeded, pct);
+    }
 
     private List<Transaction> fetchFiltered(String userId, Integer month, Integer year) {
         if (month != null && year != null) {

@@ -1,5 +1,5 @@
 import api from './client';
-import type { Transaction, TransactionListResponse, Summary, TransactionFormData, CategoryBreakdownItem, Balance } from '../types';
+import type { Transaction, TransactionListResponse, Summary, TransactionFormData, CategoryBreakdownItem, Balance, BudgetStatus } from '../types';
 
 interface TransactionResponse { transaction: Transaction }
 
@@ -16,6 +16,8 @@ export const transactionsApi = {
   balance: () => api.get<Balance>('/transactions/balance'),
   categoryBreakdown: (params?: { month?: number; year?: number }) =>
     api.get<CategoryBreakdownItem[]>('/transactions/category-breakdown', { params }),
+  budgetStatus: (params?: { month?: number; year?: number }) =>
+    api.get<BudgetStatus>('/transactions/budget-status', { params }),
   uploadReceipt: (file: File) => {
     return new Promise<{ data: { blobName: string } }>((resolve, reject) => {
       const reader = new FileReader();

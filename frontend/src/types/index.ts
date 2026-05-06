@@ -74,6 +74,15 @@ export interface Balance {
   totalBalance: number;
 }
 
+export interface BudgetStatus {
+  month: number;
+  year: number;
+  totalExpenses: number;
+  monthlyLimit: number;
+  exceeded: boolean;
+  percentage: number;
+}
+
 export interface TransactionFormData {
   type: TransactionType;
   amount: number;

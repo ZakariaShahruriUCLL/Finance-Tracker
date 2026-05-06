@@ -12,28 +12,10 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Logger;
 
-/**
- * Azure Functions entry point.
- *
- * Spring Boot cannot run inside FunctionInvoker because that class requires
- * Spring Cloud Function beans (Function<I,O>), not Spring MVC controllers.
- *
- * Instead, the static initializer starts an embedded Spring Boot / Tomcat on
- * port 8081. Each Azure Function invocation proxies the HTTP request to that
- * embedded server and forwards the response back. All existing controllers,
- * security filters, and Cosmos DB wiring remain completely unchanged.
- *
- * NOTE: The Azure Functions Java Worker only supports Optional<String> for
- * HTTP trigger bodies — Optional<byte[]> crashes the worker for JSON requests.
- * Binary file uploads are handled by base64-encoding in the client and
- * decoding in the controller, so all bodies remain valid UTF-8 text through
- * this proxy.
- */
 public class HttpTriggerFunction {
 
     private static final int SPRING_PORT = 8081;
     private static final HttpClient HTTP_CLIENT = HttpClient.newHttpClient();
-    // Headers managed by Azure Functions or the transport layer — must not be forwarded
     private static final Set<String> SKIP_RESPONSE_HEADERS = Set.of(
             "content-length", "transfer-encoding", "connection", "keep-alive",
             "server", "date");

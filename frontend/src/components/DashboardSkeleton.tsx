@@ -14,10 +14,8 @@ function ChartCard({ height, children }: { height: number; children?: React.Reac
 export default function DashboardSkeleton() {
   return (
     <>
-      {/* Hero */}
       <Skeleton height={136} borderRadius={18} style={{ marginBottom: 28 }} />
 
-      {/* Stat cards — 5 */}
       <Skeleton width={100} height={12} style={{ marginBottom: 14 }} />
       <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', marginBottom: 32 }}>
         {[0, 1, 2, 3, 4].map((i) => (
@@ -29,7 +27,6 @@ export default function DashboardSkeleton() {
         ))}
       </div>
 
-      {/* Row 1: Income/Expense + Pie */}
       <Skeleton width={120} height={12} style={{ marginBottom: 14 }} />
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 28 }}>
         <ChartCard height={210} />
@@ -47,14 +44,12 @@ export default function DashboardSkeleton() {
         </div>
       </div>
 
-      {/* Row 2: P&L + Daily Spending */}
       <Skeleton width={120} height={12} style={{ marginBottom: 14 }} />
       <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', marginBottom: 28 }}>
         <ChartCard height={200} />
         <ChartCard height={200} />
       </div>
 
-      {/* Row 3: Category bars */}
       <Skeleton width={160} height={12} style={{ marginBottom: 14 }} />
       <div style={{ ...glassCard, padding: '20px 24px', marginBottom: 28 }}>
         {[140, 90, 110, 70, 120].map((w, i) => (

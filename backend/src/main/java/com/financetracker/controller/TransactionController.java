@@ -1,6 +1,7 @@
 package com.financetracker.controller;
 
 import com.financetracker.dto.BalanceResponse;
+import com.financetracker.dto.BudgetStatusResponse;
 import com.financetracker.dto.CategoryBreakdownItem;
 import com.financetracker.dto.SummaryResponse;
 import com.financetracker.dto.TransactionDto;
@@ -38,6 +39,17 @@ public class TransactionController {
         int m = month != null ? month : now.getMonthValue();
         int y = year != null ? year : now.getYear();
         return ResponseEntity.ok(transactionService.categoryBreakdown(auth.getName(), m, y));
+    }
+
+    @GetMapping("/budget-status")
+    public ResponseEntity<BudgetStatusResponse> budgetStatus(
+            @RequestParam(required = false) Integer month,
+            @RequestParam(required = false) Integer year,
+            Authentication auth) {
+        LocalDate now = LocalDate.now();
+        int m = month != null ? month : now.getMonthValue();
+        int y = year != null ? year : now.getYear();
+        return ResponseEntity.ok(transactionService.budgetStatus(auth.getName(), m, y));
     }
 
     @GetMapping("/summary")
