@@ -1,6 +1,17 @@
 # Finance Tracker
 
-A cloud-native personal finance tracking application built on Microsoft Azure. Track income and expenses, categorise transactions, upload receipts, and visualise spending trends with a real-time dashboard.
+A cloud-native personal finance tracking application built on Microsoft Azure.
+
+### Features
+
+- **Authentication** — JWT-based register and login
+- **Transactions** — create, edit, and delete income and expense entries with amount, date, description, and optional category; filter by type, category, month, and year
+- **Categories** — predefined system categories and fully custom user-created categories (name, colour, emoji icon)
+- **Receipt uploads** — attach a receipt image to any transaction; stored in Azure Blob Storage and accessed via time-limited SAS URLs
+- **Dashboard** — real-time overview with six visualisations: all-time balance hero card, monthly stat cards (income, expenses, net balance, savings rate, avg daily spend), Income vs Expenses bar chart (last 6 months), Spending by Category donut chart, Monthly P&L with savings rate line, Daily Spending bar chart, and a Category Breakdown with progress bars
+- **Budget alerts** — a configurable monthly spending limit; a warning banner appears on the dashboard when the limit is exceeded, driven by the Azure Service Bus event pipeline
+- **Light / dark mode** — full theme switching with persistent CSS variables
+- **Skeleton loaders** — loading states on all pages for a polished user experience
 
 ## Tech Stack
 

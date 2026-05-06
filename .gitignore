@@ -2,7 +2,6 @@ node_modules/
 .env
 dist/
 .DS_Store
-.claude
 
 # Maven build output
 backend/target/
