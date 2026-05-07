@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>FinFlow — Cloud Native Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --indigo: #4f46e5;
+  --purple: #7c3aed;
+  --pink:   #be185d;
+  --green:  #22c55e;
+  --red:    #ef4444;
+  --blue:   #0666cc;
+  --dark:   #111827;
+  --grey:   #6b7280;
+  --light:  #f9fafb;
+  --bg:     #0a0a14;
+  --bg2:    #14142b;
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --text:   #f1f5f9;
+  --text-dim: #94a3b8;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  height: 100%; overflow: hidden;
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background:
+    radial-gradient(circle at 20% 30%, rgba(79,70,229,0.12), transparent 50%),
+    radial-gradient(circle at 80% 70%, rgba(190,24,93,0.10), transparent 50%),
+    radial-gradient(circle at 50% 50%, rgba(124,58,237,0.08), transparent 50%);
+  z-index: 0;
+}
+
+.deck { position: relative; width: 100vw; height: 100vh; z-index: 1; }
+.slide {
+  position: absolute; inset: 0;
+  padding: 5vh 8vw;
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  animation: slideIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide.active { display: flex; }
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  font-size: clamp(2.5rem, 5.5vw, 5.5rem);
+  font-weight: 900; letter-spacing: -0.04em; line-height: 1.05;
+  background: linear-gradient(135deg, #818cf8, #c084fc, #f472b6);
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 0.4em;
+}
+h2 {
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 800; letter-spacing: -0.025em; line-height: 1.1;
+  margin-bottom: 0.4em;
+}
+h3 {
+  font-size: clamp(1rem, 1.4vw, 1.25rem);
+  font-weight: 600; color: var(--text-dim);
+  margin-bottom: 1.5em; letter-spacing: 0.02em;
+}
+p { font-size: clamp(0.95rem, 1.3vw, 1.2rem); line-height: 1.6; color: var(--text-dim); }
+.lead { font-size: clamp(1.2rem, 1.8vw, 1.6rem); color: var(--text); }
+.huge { font-size: clamp(1.5rem, 2.5vw, 2.2rem); color: var(--text); font-weight: 600; line-height: 1.4; }
+
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 5px 14px; border-radius: 99px;
+  background: rgba(99,102,241,0.15); color: #818cf8;
+  font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em;
+  margin-bottom: 1.2rem;
+}
+.eyebrow::before {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  border-radius: 16px;
+  padding: 1.6rem;
+  transition: transform 0.2s, border-color 0.2s;
+}
+.card:hover { transform: translateY(-2px); border-color: rgba(255,255,255,0.18); }
+.card .card-title {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em;
+  font-weight: 700; color: var(--text-dim); margin-bottom: 0.8rem;
+}
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+.grid-3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+
+ul.clean { list-style: none; padding: 0; }
+ul.clean li {
+  padding: 0.65rem 0 0.65rem 1.7rem; position: relative;
+  font-size: clamp(1rem, 1.3vw, 1.2rem);
+  color: var(--text);
+  line-height: 1.5;
+}
+ul.clean li::before {
+  content: ''; position: absolute; left: 0; top: 1.15rem;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: linear-gradient(135deg, #818cf8, #c084fc);
+}
+ul.clean li strong { color: #fff; font-weight: 600; }
+
+table {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  background: var(--card-bg); border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--card-border);
+  font-size: 1rem;
+}
+th {
+  background: rgba(79,70,229,0.18); color: #fff;
+  text-align: left; padding: 0.85rem 1.1rem; font-weight: 700; font-size: 0.85rem;
+  text-transform: uppercase; letter-spacing: 0.05em;
+}
+td {
+  padding: 0.75rem 1.1rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  color: var(--text);
+}
+td.num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+tr.total td { background: rgba(34,197,94,0.08); font-weight: 700; color: var(--green); border-top: 1px solid rgba(34,197,94,0.2); }
+
+.title-slide {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #be185d 100%);
+  text-align: left;
+  justify-content: center;
+}
+.title-slide::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(circle at 70% 30%, rgba(255,255,255,0.15), transparent 60%);
+}
+.title-slide .brand-badge {
+  display: inline-flex; align-items: center; gap: 12px;
+  padding: 8px 14px; border-radius: 99px;
+  background: rgba(255,255,255,0.18); backdrop-filter: blur(8px);
+  font-size: 0.85rem; font-weight: 700; color: white;
+  text-transform: uppercase; letter-spacing: 0.15em;
+  margin-bottom: 1.5rem;
+}
+.title-slide .brand-badge .logo {
+  width: 18px; height: 18px; border-radius: 6px;
+  background: white; display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: #4f46e5; font-weight: 900;
+}
+.title-slide h1 {
+  background: none; -webkit-text-fill-color: white; color: white;
+  font-size: clamp(3.5rem, 9vw, 8rem); margin-bottom: 0.2em;
+}
+.title-slide .subtitle {
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  color: rgba(255,255,255,0.85); font-weight: 500; margin-bottom: 2rem;
+}
+.title-slide .meta {
+  font-size: 1rem; color: rgba(255,255,255,0.75); display: flex; gap: 1.5rem; flex-wrap: wrap;
+}
+.title-slide .meta span::before { content: '·'; margin-right: 1.5rem; color: rgba(255,255,255,0.4); }
+.title-slide .meta span:first-child::before { content: ''; margin: 0; }
+
+.arch-diagram {
+  position: relative;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+.arch-diagram svg { width: 100%; height: 100%; display: block; }
+.arch-text {
+  fill: white; font-family: Inter, sans-serif; font-size: 13px;
+  font-weight: 600; text-anchor: middle; dominant-baseline: central;
+}
+.arch-text-sub {
+  fill: rgba(255,255,255,0.6); font-size: 10px; font-weight: 500;
+}
+.arch-line { stroke: rgba(255,255,255,0.3); stroke-width: 1.5; fill: none; }
+.arch-line-pink { stroke: #ec4899; stroke-width: 2; }
+.arch-line-dashed { stroke: rgba(255,255,255,0.2); stroke-dasharray: 4 4; }
+
+/* Service spotlight cards */
+.svc-spotlight {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+}
+.svc-spotlight .svc-icon {
+  width: 64px; height: 64px; border-radius: 14px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; color: white; font-weight: 800;
+}
+.svc-spotlight .svc-body { flex: 1; }
+.svc-spotlight .svc-name { font-size: 1.4rem; font-weight: 800; color: white; margin-bottom: 0.4rem; }
+.svc-spotlight .svc-tag { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--text-dim); margin-bottom: 0.6rem; }
+.svc-spotlight .svc-text { font-size: 1.05rem; color: var(--text); margin-bottom: 0.6rem; }
+.svc-spotlight .svc-why { font-size: 0.95rem; font-style: italic; }
+
+/* Stats */
+.stat-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1rem 0; }
+.stat {
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  border-radius: 12px; padding: 1rem 1.5rem; flex: 1; min-width: 160px;
+}
+.stat .stat-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-dim); font-weight: 600; }
+.stat .stat-value { font-size: 1.8rem; font-weight: 800; margin-top: 4px; }
+.stat .stat-value.green { color: var(--green); }
+.stat .stat-value.indigo { color: #818cf8; }
+.stat .stat-value.pink { color: #f472b6; }
+
+code, .mono {
+  font-family: 'JetBrains Mono', monospace;
+  background: rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px;
+  font-size: 0.88em; color: #c084fc;
+}
+
+a.demo-link {
+  color: white; font-weight: 700; text-decoration: none;
+  border-bottom: 2px solid rgba(255,255,255,0.4); padding-bottom: 1px;
+  transition: border-color 0.2s, color 0.2s;
+}
+a.demo-link:hover { border-color: white; color: #f472b6; }
+
+.chrome {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 24px; z-index: 10;
+  background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+  pointer-events: none;
+}
+.progress {
+  position: fixed; top: 0; left: 0; right: 0; height: 3px;
+  background: rgba(255,255,255,0.05); z-index: 11;
+}
+.progress-bar {
+  height: 100%; background: linear-gradient(90deg, #818cf8, #c084fc, #f472b6);
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.slide-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.8rem; color: var(--text-dim); font-weight: 500;
+}
+.brand {
+  font-size: 0.85rem; font-weight: 600; color: var(--text-dim);
+  display: flex; align-items: center; gap: 8px;
+}
+.brand .logo {
+  width: 16px; height: 16px; border-radius: 4px;
+  background: linear-gradient(135deg, #4f46e5, #be185d);
+}
+
+.notes {
+  position: fixed; right: 0; top: 0; bottom: 0; width: 380px;
+  background: rgba(10,10,20,0.96); backdrop-filter: blur(20px);
+  border-left: 1px solid var(--card-border);
+  padding: 24px; overflow-y: auto; z-index: 20;
+  transform: translateX(100%); transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  font-size: 0.9rem; line-height: 1.6;
+}
+.notes.open { transform: translateX(0); }
+.notes h4 {
+  font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em;
+  color: var(--text-dim); margin-bottom: 12px; font-weight: 700;
+}
+.notes p { color: var(--text); margin-bottom: 1em; font-size: 0.92rem; }
+.notes strong { color: #c084fc; font-weight: 600; }
+.notes em { color: #f472b6; font-style: normal; font-weight: 500; }
+.notes-toggle {
+  position: fixed; top: 16px; right: 16px; z-index: 21;
+  background: var(--card-bg); border: 1px solid var(--card-border);
+  color: var(--text); padding: 8px 14px; border-radius: 8px;
+  font-size: 0.8rem; cursor: pointer; font-family: inherit;
+}
+.notes-toggle:hover { background: rgba(255,255,255,0.08); }
+
+.demo-hero {
+  background: linear-gradient(135deg, rgba(79,70,229,0.25), rgba(190,24,93,0.18));
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 20px; padding: 3rem;
+  text-align: center; margin-top: 1.5rem;
+}
+.demo-hero a {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: clamp(1rem, 2vw, 1.6rem);
+  color: white; text-decoration: none;
+  background: rgba(255,255,255,0.08);
+  padding: 1rem 1.8rem; border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.18);
+  margin-top: 1rem;
+  transition: all 0.2s;
+}
+.demo-hero a:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: rgba(255,255,255,0.4);
+  transform: translateY(-2px);
+}
+
+/* Step (data flow) */
+.step {
+  display: flex; align-items: flex-start; gap: 1.2rem;
+  padding: 1rem 1.4rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  margin-bottom: 0.7rem;
+}
+.step .step-num {
+  width: 2.6rem; height: 2.6rem; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-weight: 800; font-size: 1.05rem;
+  flex-shrink: 0;
+}
+.step .step-text { font-size: 1.05rem; line-height: 1.5; padding-top: 0.4rem; }
+
+/* Challenge card */
+.challenge {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 14px;
+  padding: 1.4rem 1.6rem;
+  margin-bottom: 1rem;
+}
+.challenge h3 {
+  color: #f472b6; font-size: 1.15rem; font-weight: 700;
+  margin-bottom: 0.6rem;
+}
+.challenge .problem { color: var(--text-dim); font-size: 0.98rem; margin-bottom: 0.4rem; }
+.challenge .problem strong { color: white; }
+.challenge .solution { color: #4ade80; font-size: 0.98rem; }
+.challenge .solution strong { color: #4ade80; }
+
+.qa-slide {
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #be185d 100%);
+  align-items: center; justify-content: center; text-align: center;
+}
+.qa-slide h1 {
+  font-size: clamp(4rem, 10vw, 9rem);
+  background: none; -webkit-text-fill-color: white; color: white;
+}
+.qa-slide .qa-meta {
+  margin-top: 2rem; color: rgba(255,255,255,0.92); font-size: 1.1rem; line-height: 1.9;
+}
+.qa-slide .qa-meta a {
+  color: white; font-family: 'JetBrains Mono', monospace;
+  background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 6px;
+  text-decoration: none; transition: background 0.2s;
+}
+.qa-slide .qa-meta a:hover { background: rgba(255,255,255,0.3); }
+</style>
+</head>
+<body>
+
+<div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+<button class="notes-toggle" id="notesToggle">Notes (S)</button>
+
+<div class="deck">
+
+<!-- =================================================== -->
+<!-- SECTION 1: INTRO                                    -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 1: TITLE ============ -->
+<section class="slide title-slide active" data-notes="
+<strong>Opening (15 seconds):</strong>
+<p>Good morning. We're FinFlow — a cloud-native personal finance application built on Microsoft Azure.</p>
+<p>I'm Zakaria. With me is Salina.</p>
+<p><strong>Tone:</strong> Confident, calm. Make eye contact before clicking forward.</p>
+">
+  <div class="brand-badge">
+    <div class="logo">F</div>
+    FinFlow
+  </div>
+  <h1>FinFlow</h1>
+  <p class="subtitle">A Cloud-Native Personal Finance Application</p>
+  <div class="meta">
+    <span>Zakaria Shahruri</span>
+    <span>Salina Giri</span>
+    <span>Cloud Native Engineering · 2026</span>
+  </div>
+</section>
+
+<!-- ============ SLIDE 2: TEAM ============ -->
+<section class="slide" data-notes="
+<strong>Team split (45 seconds):</strong>
+<p>Walk the split clearly. <em>'I owned the data and backend services — Cosmos DB partitioning, Redis caching, Blob Storage with SAS URLs, Key Vault and Managed Identity, Application Insights, plus the Spring Boot API.'</em></p>
+<p>Then hand off: <em>'Salina owned compute, messaging, and infrastructure — the Azure Functions migration, the Service Bus pub/sub system, the entire Bicep IaC, and the GitHub Actions CI/CD.'</em></p>
+<p>Don't list every bullet on the screen — let the audience read while you summarise.</p>
+">
+  <span class="eyebrow">01 · Intro</span>
+  <h2>The team</h2>
+  <div class="grid-2" style="margin-top: 1rem;">
+    <div class="card" style="background: linear-gradient(135deg, rgba(79,70,229,0.12), rgba(99,102,241,0.04));">
+      <div class="card-title" style="color: #818cf8;">Zakaria Shahruri — Data &amp; Backend Services</div>
+      <ul class="clean" style="font-size: 0.95rem;">
+        <li>Azure Cosmos DB · partition strategy &amp; data model</li>
+        <li>Azure Cache for Redis · caching &amp; eviction</li>
+        <li>Azure Blob Storage · receipts &amp; SAS URLs</li>
+        <li>Azure Key Vault · secrets &amp; Managed Identity</li>
+        <li>Application Insights · observability</li>
+        <li>Spring Boot API · JWT auth</li>
+      </ul>
+    </div>
+    <div class="card" style="background: linear-gradient(135deg, rgba(190,24,93,0.12), rgba(244,114,182,0.04));">
+      <div class="card-title" style="color: #f472b6;">Salina Giri — Compute, Messaging &amp; IaC</div>
+      <ul class="clean" style="font-size: 0.95rem;">
+        <li>Azure Functions · serverless backend migration</li>
+        <li>Azure Service Bus · pub/sub &amp; subscribers</li>
+        <li>Bicep Infrastructure as Code · 7 modules</li>
+        <li>CI/CD · GitHub Actions workflows</li>
+        <li>Frontend &amp; UI/UX collaboration</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 3: PURPOSE ============ -->
+<section class="slide" data-notes="
+<strong>Purpose (30 seconds):</strong>
+<p>Read the bold line slowly: <em>'Cloud-native principles applied end-to-end — not a single VM with a database.'</em></p>
+<p>Then expand: <em>'Serverless compute. Managed services. Event-driven messaging. Secrets-as-code. Every architectural choice in this deck has a reason behind it.'</em></p>
+<p>That sentence sets up everything that follows. Pause. Click forward.</p>
+">
+  <span class="eyebrow">01 · Intro</span>
+  <h2>Why we built FinFlow</h2>
+  <p class="huge" style="margin-top: 1rem; max-width: 1000px;">
+    Apply <strong style="color: #c084fc;">cloud-native principles end-to-end</strong> — not lift-and-shift, not a single VM with a database.
+  </p>
+  <div class="grid-2" style="margin-top: 2rem;">
+    <div class="card">
+      <p style="color: var(--text); font-size: 1.1rem; line-height: 1.5;">Serverless compute · managed services · event-driven · caching · IaC · secrets-as-code · observability</p>
+    </div>
+    <div class="card" style="background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(99,102,241,0.06)); border-color: rgba(34,197,94,0.2);">
+      <p style="color: var(--text); font-size: 1.1rem; font-weight: 600;">
+        Every architectural choice has a reason behind it.
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 2: PROBLEM                                  -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 4: THE PROBLEM ============ -->
+<section class="slide" data-notes="
+<strong>The problem (30 seconds):</strong>
+<p>Don't dwell — finance tracking isn't novel. State the gap and move on.</p>
+<p>Strong line: <em>'Existing apps either charge a subscription or sell user data. We wanted to prove you can run a production-grade alternative on Azure for under thirty euros a year.'</em></p>
+">
+  <span class="eyebrow">02 · Problem</span>
+  <h2>The problem</h2>
+  <p class="huge" style="margin-top: 1rem; max-width: 950px;">
+    Most personal finance apps either <strong style="color: #f472b6;">charge a subscription</strong>, <strong style="color: #f472b6;">sell user data</strong>, or <strong style="color: #f472b6;">can't be self-hosted</strong>.
+  </p>
+  <div class="card" style="margin-top: 2rem; background: linear-gradient(135deg, rgba(34,197,94,0.10), rgba(99,102,241,0.06)); border-color: rgba(34,197,94,0.2);">
+    <div class="card-title" style="color: var(--green);">FinFlow's solution</div>
+    <p class="lead" style="color: var(--text); margin-top: 0.5rem;">
+      An open-source, self-hostable finance tracker that runs at near-zero cost on Azure — with all data owned by the user.
+    </p>
+  </div>
+</section>
+
+<!-- ============ SLIDE 5: TARGET AUDIENCE ============ -->
+<section class="slide" data-notes="
+<strong>Target audience (30 seconds):</strong>
+<p>Hit the three personas in one breath. Don't elaborate — they're self-explanatory.</p>
+<p>Move quickly to the architecture, which is what's being graded.</p>
+">
+  <span class="eyebrow">02 · Problem</span>
+  <h2>Target audience</h2>
+  <div class="grid-3" style="margin-top: 1.5rem;">
+    <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">👤</div>
+      <h3 style="color: #818cf8; font-size: 1.2rem; margin-bottom: 0.5em;">Students</h3>
+      <p>Managing limited budgets and tracking expenses across part-time income.</p>
+    </div>
+    <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">💼</div>
+      <h3 style="color: #f472b6; font-size: 1.2rem; margin-bottom: 0.5em;">Freelancers</h3>
+      <p>Monitoring income variance and managing irregular monthly cashflow.</p>
+    </div>
+    <div class="card" style="text-align: center; padding: 2rem 1.5rem;">
+      <div style="font-size: 3rem; margin-bottom: 0.5rem;">🔒</div>
+      <h3 style="color: #4ade80; font-size: 1.2rem; margin-bottom: 0.5em;">Privacy-conscious users</h3>
+      <p>Avoiding data-broker apps that monetise transaction history.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 3: ARCHITECTURE                             -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 6: ARCHITECTURE DIAGRAM ============ -->
+<section class="slide" data-notes="
+<strong>Architecture diagram (90 seconds — the most important slide of the presentation):</strong>
+<p><strong>Walk it left-to-right, top-to-bottom.</strong> Don't list every arrow — focus on the patterns.</p>
+<p>Script: <em>'A user hits the React SPA, served as static files from Azure Blob Storage. The SPA calls our Spring Boot API, which actually runs inside Azure Functions on the Consumption plan — so it scales to zero when idle.'</em></p>
+<p><em>'The API talks to three data services on the right: Cosmos DB for persistence, Redis for caching aggregations, and Blob Storage for receipt uploads.'</em></p>
+<p><em>'But here's the cloud-native bit — every write also publishes an event to a Service Bus topic. Two independent subscribers consume that topic: one logs the change, the other recalculates the user's monthly spend and fires a budget alert. The transaction succeeds even if the budget check is slow or fails.'</em></p>
+<p><em>'Cross-cutting at the bottom: Key Vault holds every secret, Managed Identity authenticates the Function App, and Application Insights collects telemetry.'</em></p>
+<p>Pause for breath.</p>
+">
+  <span class="eyebrow">03 · Architecture</span>
+  <h2>Azure architecture overview</h2>
+  <div class="arch-diagram">
+    <svg viewBox="0 0 1200 540" preserveAspectRatio="xMidYMid meet">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="rgba(255,255,255,0.4)"/></marker>
+        <marker id="arrowPink" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#ec4899"/></marker>
+        <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="9" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L0,6 L9,3 z" fill="#22c55e"/></marker>
+        <linearGradient id="gradFrontend" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#0666cc"/><stop offset="100%" stop-color="#1e40af"/></linearGradient>
+        <linearGradient id="gradFunctions" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#4f46e5"/><stop offset="100%" stop-color="#6366f1"/></linearGradient>
+        <linearGradient id="gradCosmos" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#22c55e"/><stop offset="100%" stop-color="#15803d"/></linearGradient>
+        <linearGradient id="gradRedis" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#ef4444"/><stop offset="100%" stop-color="#b91c1c"/></linearGradient>
+        <linearGradient id="gradBlob" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#7c3aed"/><stop offset="100%" stop-color="#5b21b6"/></linearGradient>
+        <linearGradient id="gradBus" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#be185d"/><stop offset="100%" stop-color="#831843"/></linearGradient>
+        <linearGradient id="gradGrey" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#6b7280"/><stop offset="100%" stop-color="#374151"/></linearGradient>
+      </defs>
+
+      <rect x="40" y="180" width="120" height="64" rx="10" fill="#1f2937" stroke="rgba(255,255,255,0.15)"/>
+      <text class="arch-text" x="100" y="212">User</text>
+      <text class="arch-text arch-text-sub" x="100" y="230">Browser</text>
+
+      <rect x="220" y="180" width="180" height="64" rx="10" fill="url(#gradFrontend)"/>
+      <text class="arch-text" x="310" y="206">React SPA</text>
+      <text class="arch-text arch-text-sub" x="310" y="226">Blob Storage Static Site</text>
+
+      <rect x="460" y="180" width="200" height="64" rx="10" fill="url(#gradFunctions)"/>
+      <text class="arch-text" x="560" y="206">Azure Functions</text>
+      <text class="arch-text arch-text-sub" x="560" y="226">Spring Boot API · Java 21</text>
+
+      <rect x="940" y="60" width="200" height="60" rx="10" fill="url(#gradCosmos)"/>
+      <text class="arch-text" x="1040" y="84">Cosmos DB</text>
+      <text class="arch-text arch-text-sub" x="1040" y="102">3 containers · /userId</text>
+
+      <rect x="940" y="150" width="200" height="60" rx="10" fill="url(#gradRedis)"/>
+      <text class="arch-text" x="1040" y="174">Azure Cache for Redis</text>
+      <text class="arch-text arch-text-sub" x="1040" y="192">@Cacheable + @CacheEvict</text>
+
+      <rect x="940" y="240" width="200" height="60" rx="10" fill="url(#gradBlob)"/>
+      <text class="arch-text" x="1040" y="264">Blob Storage</text>
+      <text class="arch-text arch-text-sub" x="1040" y="282">Receipts · SAS URLs</text>
+
+      <rect x="460" y="340" width="200" height="60" rx="10" fill="url(#gradBus)"/>
+      <text class="arch-text" x="560" y="364">Service Bus topic</text>
+      <text class="arch-text arch-text-sub" x="560" y="382">transaction-events</text>
+
+      <rect x="740" y="320" width="180" height="48" rx="10" fill="#1f2937" stroke="rgba(236,72,153,0.5)"/>
+      <text class="arch-text" x="830" y="346">audit-log subscriber</text>
+
+      <rect x="740" y="380" width="180" height="48" rx="10" fill="#1f2937" stroke="rgba(236,72,153,0.5)"/>
+      <text class="arch-text" x="830" y="406">budget-alert subscriber</text>
+
+      <rect x="220" y="460" width="160" height="50" rx="10" fill="url(#gradGrey)"/>
+      <text class="arch-text" x="300" y="488">Key Vault</text>
+
+      <rect x="460" y="460" width="200" height="50" rx="10" fill="url(#gradGrey)"/>
+      <text class="arch-text" x="560" y="488">Managed Identity</text>
+
+      <rect x="740" y="460" width="200" height="50" rx="10" fill="url(#gradGrey)"/>
+      <text class="arch-text" x="840" y="488">Application Insights</text>
+
+      <line class="arch-line" x1="160" y1="212" x2="220" y2="212" marker-end="url(#arrow)"/>
+      <line class="arch-line" x1="400" y1="212" x2="460" y2="212" marker-end="url(#arrow)"/>
+      <line class="arch-line" x1="660" y1="200" x2="940" y2="90" marker-end="url(#arrow)"/>
+      <line class="arch-line" x1="660" y1="212" x2="940" y2="180" marker-end="url(#arrow)"/>
+      <line class="arch-line" x1="660" y1="225" x2="940" y2="270" marker-end="url(#arrow)"/>
+      <line class="arch-line-pink" x1="560" y1="244" x2="560" y2="340" marker-end="url(#arrowPink)"/>
+      <line class="arch-line-pink" x1="660" y1="360" x2="740" y2="344" marker-end="url(#arrowPink)"/>
+      <line class="arch-line-pink" x1="660" y1="380" x2="740" y2="404" marker-end="url(#arrowPink)"/>
+      <path d="M 920 404 Q 1170 404 1170 90 L 1140 90" class="arch-line" stroke="#22c55e" fill="none" marker-end="url(#arrowGreen)"/>
+      <line class="arch-line-dashed" x1="500" y1="244" x2="300" y2="460" marker-end="url(#arrow)"/>
+      <line class="arch-line-dashed" x1="560" y1="244" x2="560" y2="460" marker-end="url(#arrow)"/>
+      <line class="arch-line-dashed" x1="620" y1="244" x2="840" y2="460" marker-end="url(#arrow)"/>
+    </svg>
+  </div>
+  <p style="margin-top: 0.6rem; font-size: 0.8rem; color: var(--text-dim); font-style: italic;">
+    White: synchronous calls · Pink: pub/sub events · Green: read-back · Dashed: secret &amp; telemetry references via Managed Identity
+  </p>
+</section>
+
+<!-- ============ SLIDE 7: SERVICES — COMPUTE & DATA ============ -->
+<section class="slide" data-notes="
+<strong>Services 1/4 — Compute (45 seconds):</strong>
+<p>Open with: <em>'Azure Functions on the Consumption plan, running our Spring Boot API. The reason we picked Consumption specifically — most of the day there's no traffic. Pay-per-execution made more sense than a dedicated VM.'</em></p>
+<p>Mention the Java cold start trade-off here so it's not a surprise in Q&amp;A: <em>'The trade-off is cold start latency on the first request, but for our scale that's acceptable.'</em></p>
+">
+  <span class="eyebrow">03 · Architecture · Services</span>
+  <h2>Compute</h2>
+  <div class="svc-spotlight" style="margin-top: 1.5rem;">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #4f46e5, #6366f1);">⚡</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Functions</div>
+      <div class="svc-tag">Consumption plan · Java 21 · Spring Boot</div>
+      <p class="svc-text">HTTP triggers proxy every request to an embedded Spring Boot instance on port 8081. Scales to zero when idle.</p>
+      <p class="svc-why" style="color: #818cf8;">Why? Variable load — most of the day there's no traffic. Pay only for actual invocations.</p>
+    </div>
+  </div>
+  <div class="svc-spotlight">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #22c55e, #15803d);">🗄</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Cosmos DB</div>
+      <div class="svc-tag">Serverless · 3 containers · partition <code>/userId</code></div>
+      <p class="svc-text">Users, categories, transactions. Schemaless documents with embedded category data — no cross-container joins.</p>
+      <p class="svc-why" style="color: #4ade80;">Why? Per-user data with no cross-user queries fits NoSQL perfectly.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 8: SERVICES — CACHE & MESSAGING ============ -->
+<section class="slide" data-notes="
+<strong>Services 2/4 — Cache &amp; messaging (60 seconds):</strong>
+<p><strong>Redis:</strong> 'Our dashboard does aggregations across thousands of transactions — balance, monthly summary, category breakdown. Without Redis, every dashboard load triggers a full scan. With <code>@Cacheable</code> and <code>@CacheEvict</code>, returning users see the dashboard instantly.'</p>
+<p><strong>Service Bus:</strong> 'When a user creates a transaction, we publish an event. Two subscribers consume it independently. The user's transaction succeeds even if the budget check is slow or fails. That's pub/sub — concerns decoupled.'</p>
+<p>End: <em>'Without this, a slow database query in the budget check would block every transaction. With pub/sub, it can't.'</em></p>
+">
+  <span class="eyebrow">03 · Architecture · Services</span>
+  <h2>Cache &amp; messaging</h2>
+  <div class="svc-spotlight" style="margin-top: 1.5rem;">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">⚡</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Cache for Redis</div>
+      <div class="svc-tag"><code>@Cacheable</code> · <code>@CacheEvict</code> on writes</div>
+      <p class="svc-text">Caches balance, monthly summary, and category breakdown. Cache key includes user ID + month + year.</p>
+      <p class="svc-why" style="color: #f87171;">Why? Aggregations over thousands of transactions are slow without caching.</p>
+    </div>
+  </div>
+  <div class="svc-spotlight">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #be185d, #831843);">📡</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Service Bus</div>
+      <div class="svc-tag">Topic + 2 subscribers: audit-log · budget-alert</div>
+      <p class="svc-text">Every transaction write publishes an event. Subscribers consume independently with dead-letter queues for failed messages.</p>
+      <p class="svc-why" style="color: #f472b6;">Why? Decouples writes from monitoring — a slow budget check can't block a transaction.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 9: SERVICES — STORAGE & SECURITY ============ -->
+<section class="slide" data-notes="
+<strong>Services 3/4 — Storage &amp; security (60 seconds):</strong>
+<p><strong>Blob Storage:</strong> 'Used for two things — receipt uploads with one-hour SAS URLs, and serving the React SPA itself as a static website. The frontend never proxies file downloads through our API; it links directly to Azure storage with a signed URL.'</p>
+<p><strong>Key Vault:</strong> Lead with the strongest line. <em>'Zero secrets anywhere in our deployment templates. App settings reference Key Vault by URI. The Function App authenticates via user-assigned Managed Identity. Our Bicep can be public without leaking anything.'</em></p>
+<p>That last line is genuinely impressive — emphasise it.</p>
+">
+  <span class="eyebrow">03 · Architecture · Services</span>
+  <h2>Storage &amp; security</h2>
+  <div class="svc-spotlight" style="margin-top: 1.5rem;">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">📦</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Blob Storage</div>
+      <div class="svc-tag">Receipts · SAS URLs · static website hosting</div>
+      <p class="svc-text">Receipt files accessed via 1-hour SAS URLs — frontend links directly to storage. Also hosts the React SPA on the <code>$web</code> container.</p>
+      <p class="svc-why" style="color: #c084fc;">Why? Cheap, durable, and integrates natively with Functions.</p>
+    </div>
+  </div>
+  <div class="svc-spotlight">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #6b7280, #374151);">🔐</div>
+    <div class="svc-body">
+      <div class="svc-name">Azure Key Vault</div>
+      <div class="svc-tag">5 secrets · user-assigned Managed Identity · RBAC</div>
+      <p class="svc-text">App settings use <code>@Microsoft.KeyVault(SecretUri=...)</code> references. The Function App authenticates via Managed Identity — no credentials anywhere.</p>
+      <p class="svc-why" style="color: #a3a3a3;">Why? Zero plain-text secrets in our deployment templates or environment.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 10: SERVICES — OBSERVABILITY & IAC ============ -->
+<section class="slide" data-notes="
+<strong>Services 4/4 — Observability &amp; IaC (45 seconds):</strong>
+<p><strong>App Insights:</strong> Brief mention. 'Standard observability — every request, exception, and outbound dependency call is captured automatically.'</p>
+<p><strong>Bicep:</strong> 'Seven modular templates. Every resource on the previous slides is declared as code. We can tear down and redeploy the entire stack in about twelve minutes.'</p>
+<p>End: <em>'These two services are what turn a working app into a production-grade system — full observability and reproducible infrastructure.'</em></p>
+">
+  <span class="eyebrow">03 · Architecture · Services</span>
+  <h2>Observability &amp; infrastructure as code</h2>
+  <div class="svc-spotlight" style="margin-top: 1.5rem;">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #0ea5e9, #0369a1);">📊</div>
+    <div class="svc-body">
+      <div class="svc-name">Application Insights</div>
+      <div class="svc-tag">Log Analytics workspace + Insights component</div>
+      <p class="svc-text">Auto-captures every request, exception, and outbound dependency call from the Function App.</p>
+      <p class="svc-why" style="color: #38bdf8;">Why? Production-grade observability without writing instrumentation code.</p>
+    </div>
+  </div>
+  <div class="svc-spotlight" style="background: linear-gradient(135deg, rgba(99,102,241,0.12), rgba(190,24,93,0.08)); border-color: rgba(99,102,241,0.3);">
+    <div class="svc-icon" style="background: linear-gradient(135deg, #818cf8, #f472b6);">🏗</div>
+    <div class="svc-body">
+      <div class="svc-name">Bicep Infrastructure as Code</div>
+      <div class="svc-tag">7 modular templates · reproducible deployments</div>
+      <p class="svc-text">Every resource on the previous slides — Cosmos, Functions, Redis, Service Bus, Blob, Key Vault, App Insights — declared as code with proper module dependencies.</p>
+      <p class="svc-why" style="color: #c084fc;">Why? Tear down and redeploy the entire stack in twelve minutes.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 11: DATA FLOW ============ -->
+<section class="slide" data-notes="
+<strong>Data flow walkthrough (75 seconds):</strong>
+<p>This proves you understand <em>how the pieces actually work together</em>. Walk each step deliberately.</p>
+<p>Key emphases:</p>
+<p>Step 4 — <em>'Cache invalidation. We can't just cache forever. Every write evicts the relevant entries.'</em></p>
+<p>Step 5–6 — <em>'Pub/sub. Publish once, two subscribers consume independently.'</em></p>
+<p>End: <em>'Every step is observable in App Insights, every secret is fetched from Key Vault — the user just sees a successful API call.'</em></p>
+">
+  <span class="eyebrow">03 · Architecture · Data flow</span>
+  <h2>Creating a transaction — step by step</h2>
+  <div style="margin-top: 1.2rem;">
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #4f46e5, #6366f1);">1</div>
+      <div class="step-text">User submits form in React → <code>POST /api/transactions</code> with JWT</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #4f46e5, #6366f1);">2</div>
+      <div class="step-text">Azure Functions receives request, proxies to Spring Boot on port 8081</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #22c55e, #15803d);">3</div>
+      <div class="step-text">JWT validated → write to <strong>Cosmos DB</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #ef4444, #b91c1c);">4</div>
+      <div class="step-text"><strong>Redis</strong> cache invalidated for that user (<code>@CacheEvict</code>)</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #be185d, #831843);">5</div>
+      <div class="step-text">Event published to <strong>Service Bus</strong> topic <code>transaction-events</code></div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #be185d, #831843);">6</div>
+      <div class="step-text">Two subscribers consume in parallel: <strong>audit-log</strong> records the change · <strong>budget-alert</strong> recalculates monthly spend</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="background: linear-gradient(135deg, #7c3aed, #5b21b6);">7</div>
+      <div class="step-text">Frontend reloads dashboard → red banner if budget exceeded</div>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 4: DEMO                                     -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 12: LIVE DEMO ============ -->
+<section class="slide" data-notes="
+<strong>Live demo (5 minutes — make this rehearsed):</strong>
+<p><strong>Pre-flight checklist:</strong></p>
+<p>• Hit the health endpoint 2 minutes before — Java cold start is 30+ seconds</p>
+<p>• Test account credentials in a sticky note</p>
+<p>• One pre-existing expense in the account so dashboard isn't empty</p>
+<p>• Browser zoomed to 110% so charts are readable from the back</p>
+<p>• <strong>DevTools closed</strong> — looks unprofessional</p>
+<p><strong>Narrate during demo:</strong> Don't go silent while clicking. <em>'I'll create a category... add an expense over our 500 euro budget... watch the banner appear at the top.'</em></p>
+<p>The link below opens the live site in a new tab. Click it now.</p>
+">
+  <span class="eyebrow">04 · Demo</span>
+  <h2>Live demonstration</h2>
+  <div class="demo-hero">
+    <p style="font-size: 0.85rem; color: rgba(255,255,255,0.7); text-transform: uppercase; letter-spacing: 0.15em; font-weight: 700; margin-bottom: 0.5rem;">Visit the live site</p>
+    <a href="https://finflow.z28.web.core.windows.net" target="_blank" rel="noopener noreferrer">
+      🔗 finflow.z28.web.core.windows.net
+    </a>
+    <p style="margin-top: 1.2rem; color: rgba(255,255,255,0.85); font-size: 0.95rem;">
+      Click the link above to open the live demo in a new tab
+    </p>
+  </div>
+  <div class="grid-2" style="margin-top: 1.5rem;">
+    <div class="card">
+      <div class="card-title">What we'll demonstrate</div>
+      <ul class="clean" style="font-size: 0.95rem;">
+        <li>Login with prepared account</li>
+        <li>Create a custom category</li>
+        <li>Add a transaction with receipt upload</li>
+        <li>Real-time dashboard with 6 visualisations</li>
+        <li>Trigger a budget alert (Service Bus → frontend banner)</li>
+      </ul>
+    </div>
+    <div class="card">
+      <div class="card-title">Pre-flight</div>
+      <p style="font-size: 0.95rem;">Backend warmed (<code>/api/health</code> hit 2 minutes prior), Cosmos DB session active, Service Bus connection live, Redis cache warm.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 5: PRICING                                  -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 13: PRICING — 1K USERS ============ -->
+<section class="slide" data-notes="
+<strong>Pricing 1K (30 seconds):</strong>
+<p>Open with the punchline: <em>'At one thousand active users, our entire stack costs three hundred and twenty euros per year. That's thirty-two cents per user — including database, cache, messaging, monitoring, and managed secrets.'</em></p>
+<p>Mention: Functions and App Insights are both <strong>zero</strong> at this scale because of free grants.</p>
+">
+  <span class="eyebrow">05 · Pricing</span>
+  <h2>1,000 monthly active users</h2>
+  <table style="margin-top: 1.5rem;">
+    <thead><tr><th>Service</th><th>Tier</th><th class="num">Monthly</th><th class="num">Yearly</th></tr></thead>
+    <tbody>
+      <tr><td>Azure Functions</td><td>Consumption (within free grant)</td><td class="num">€0.00</td><td class="num">€0.00</td></tr>
+      <tr><td>Cosmos DB</td><td>Serverless (~5M RU/month)</td><td class="num">€1.20</td><td class="num">€14.40</td></tr>
+      <tr><td>Cache for Redis</td><td>Basic C0</td><td class="num">€15.50</td><td class="num">€186.00</td></tr>
+      <tr><td>Service Bus</td><td>Standard</td><td class="num">€9.20</td><td class="num">€110.40</td></tr>
+      <tr><td>Blob Storage</td><td>Standard LRS</td><td class="num">€0.50</td><td class="num">€6.00</td></tr>
+      <tr><td>Key Vault</td><td>Standard</td><td class="num">€0.30</td><td class="num">€3.60</td></tr>
+      <tr><td>Application Insights</td><td>First 5 GB free</td><td class="num">€0.00</td><td class="num">€0.00</td></tr>
+      <tr class="total"><td colspan="2">TOTAL</td><td class="num">€26.70</td><td class="num">€320.40</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--green); font-weight: 600;">
+    ≈ €0.32 per user per year.
+  </p>
+</section>
+
+<!-- ============ SLIDE 14: PRICING — 10K USERS ============ -->
+<section class="slide" data-notes="
+<strong>Pricing 10K (30 seconds):</strong>
+<p>Punchline: <em>'Ten times the users for less than four times the cost. That's the cloud-native economic model in action.'</em></p>
+<p>Mention: Redis jumps to Standard tier here for replication.</p>
+">
+  <span class="eyebrow">05 · Pricing</span>
+  <h2>10,000 monthly active users</h2>
+  <table style="margin-top: 1.5rem;">
+    <thead><tr><th>Service</th><th>Tier</th><th class="num">Monthly</th><th class="num">Yearly</th></tr></thead>
+    <tbody>
+      <tr><td>Azure Functions</td><td>Consumption (~5M execs)</td><td class="num">€0.80</td><td class="num">€9.60</td></tr>
+      <tr><td>Cosmos DB</td><td>Serverless (~50M RU/month)</td><td class="num">€12.00</td><td class="num">€144.00</td></tr>
+      <tr><td>Cache for Redis</td><td>Standard C1 (1 GB, replicated)</td><td class="num">€60.00</td><td class="num">€720.00</td></tr>
+      <tr><td>Service Bus</td><td>Standard</td><td class="num">€9.20</td><td class="num">€110.40</td></tr>
+      <tr><td>Blob Storage</td><td>Standard LRS (~50 GB)</td><td class="num">€3.00</td><td class="num">€36.00</td></tr>
+      <tr><td>Key Vault</td><td>Standard</td><td class="num">€0.50</td><td class="num">€6.00</td></tr>
+      <tr><td>Application Insights</td><td>~10 GB</td><td class="num">€13.00</td><td class="num">€156.00</td></tr>
+      <tr class="total"><td colspan="2">TOTAL</td><td class="num">€98.50</td><td class="num">€1,182.00</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--green); font-weight: 600;">
+    10× users · 3.7× cost · ≈ €0.12 per user per year.
+  </p>
+</section>
+
+<!-- ============ SLIDE 15: PRICING — 100K USERS ============ -->
+<section class="slide" data-notes="
+<strong>Pricing 100K (45 seconds):</strong>
+<p>Big punchline: <em>'At one hundred thousand users — that's a real product with revenue — the entire infrastructure costs less than one cent per user per month. €0.0099 to be exact.'</em></p>
+<p>Note: Cosmos switches to provisioned RU/s here, Redis goes Premium for HA.</p>
+<p>End: <em>'For comparison, a traditional VM-based stack at this scale would cost about eight hundred and thirty euros per month — that's eighty-eight percent more, once you factor in sysadmin time.'</em></p>
+">
+  <span class="eyebrow">05 · Pricing</span>
+  <h2>100,000 monthly active users</h2>
+  <table style="margin-top: 1.5rem;">
+    <thead><tr><th>Service</th><th>Tier</th><th class="num">Monthly</th><th class="num">Yearly</th></tr></thead>
+    <tbody>
+      <tr><td>Azure Functions</td><td>Consumption (~50M execs)</td><td class="num">€18.00</td><td class="num">€216.00</td></tr>
+      <tr><td>Cosmos DB</td><td>Provisioned (~5K RU/s autoscale)</td><td class="num">€280.00</td><td class="num">€3,360.00</td></tr>
+      <tr><td>Cache for Redis</td><td>Premium P1 (6 GB, HA)</td><td class="num">€430.00</td><td class="num">€5,160.00</td></tr>
+      <tr><td>Service Bus</td><td>Standard</td><td class="num">€9.20</td><td class="num">€110.40</td></tr>
+      <tr><td>Blob Storage</td><td>Standard LRS (~500 GB)</td><td class="num">€25.00</td><td class="num">€300.00</td></tr>
+      <tr><td>Key Vault</td><td>Standard</td><td class="num">€2.00</td><td class="num">€24.00</td></tr>
+      <tr><td>Application Insights</td><td>~100 GB</td><td class="num">€230.00</td><td class="num">€2,760.00</td></tr>
+      <tr class="total"><td colspan="2">TOTAL</td><td class="num">€994.20</td><td class="num">€11,930.40</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top: 1rem; font-size: 1.1rem; color: var(--green); font-weight: 600;">
+    Per user per month: <span style="font-size: 1.4rem;">€0.0099</span> — under one cent.
+  </p>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 6: CHALLENGES                               -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 16: CHALLENGES 1/2 ============ -->
+<section class="slide" data-notes="
+<strong>Challenges 1/2 (60 seconds):</strong>
+<p>Don't read every card. Pick the strongest story and elaborate.</p>
+<p><strong>Best story — Spring Boot in Functions:</strong> 'Azure Functions Java worker only supports Function&lt;I,O&gt; beans. We had a full Spring Boot REST API with controllers, security filters, the works. We didn't want to rewrite. So a static initializer starts Spring Boot on port 8081 inside the Function worker, and the HTTP trigger just proxies every request to it. Existing controllers work unchanged.'</p>
+<p>That kind of detail demonstrates 'deep understanding'.</p>
+">
+  <span class="eyebrow">06 · Challenges</span>
+  <h2>Technical hurdles · 1/2</h2>
+  <div style="margin-top: 1.5rem;">
+    <div class="challenge">
+      <h3>Spring Boot inside Azure Functions</h3>
+      <p class="problem"><strong>Problem:</strong> Java worker only supports <code>Function&lt;I,O&gt;</code> beans, not Spring MVC.</p>
+      <p class="solution"><strong>Solution:</strong> Static initializer starts Spring on port 8081; HTTP trigger proxies all requests. All existing controllers and security filters remain unchanged.</p>
+    </div>
+    <div class="challenge">
+      <h3>Secrets in plain text</h3>
+      <p class="problem"><strong>Problem:</strong> First Bicep had Cosmos keys, JWT secret, and Redis password as plain-text app settings — visible in deployment logs.</p>
+      <p class="solution"><strong>Solution:</strong> Refactored to Key Vault module + user-assigned Managed Identity + KV references. Zero secrets in deployment templates.</p>
+    </div>
+    <div class="challenge">
+      <h3>CORS preflight blocked</h3>
+      <p class="problem"><strong>Problem:</strong> Azure Functions intercepts <code>OPTIONS</code> at the platform level — empty 204 responses, browsers reject all cross-origin calls.</p>
+      <p class="solution"><strong>Solution:</strong> CORS configured at Functions platform via Bicep + <code>az functionapp cors add</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 17: CHALLENGES 2/2 ============ -->
+<section class="slide" data-notes="
+<strong>Challenges 2/2 (45 seconds):</strong>
+<p>Move quickly through these — they're more straightforward than the previous slide.</p>
+<p>Best to elaborate on if asked: <em>'CI/CD region restriction — Azure Static Web Apps wasn't available in francecentral. We pivoted to Blob Storage static website hosting plus a GitHub Actions workflow that does az storage blob upload-batch. Same outcome, different mechanism.'</em></p>
+">
+  <span class="eyebrow">06 · Challenges</span>
+  <h2>Technical hurdles · 2/2</h2>
+  <div style="margin-top: 1.5rem;">
+    <div class="challenge">
+      <h3>CI/CD region restriction</h3>
+      <p class="problem"><strong>Problem:</strong> Azure Static Web Apps was not available in the francecentral region.</p>
+      <p class="solution"><strong>Solution:</strong> Pivoted to Blob Storage static website hosting + GitHub Actions <code>az storage blob upload-batch</code>.</p>
+    </div>
+    <div class="challenge">
+      <h3>Cache invalidation</h3>
+      <p class="problem"><strong>Problem:</strong> First implementation cached aggregations forever — dashboards showed stale data.</p>
+      <p class="solution"><strong>Solution:</strong> <code>@CacheEvict(allEntries = true)</code> on every write operation guarantees freshness.</p>
+    </div>
+    <div class="challenge">
+      <h3>Empty Spending by Category chart</h3>
+      <p class="problem"><strong>Problem:</strong> Backend filtered out transactions with no <code>categoryId</code> — chart was always empty for new users.</p>
+      <p class="solution"><strong>Solution:</strong> Added "Uncategorized" fallback bucket so all expenses appear regardless of categorisation.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =================================================== -->
+<!-- SECTION 7: CONCLUSION & Q&A                         -->
+<!-- =================================================== -->
+
+<!-- ============ SLIDE 18: ADVANTAGES ============ -->
+<section class="slide" data-notes="
+<strong>Advantages (45 seconds):</strong>
+<p>Stand tall here. Read the bullets confidently — these are real wins.</p>
+<p>Strongest line: <em>'A production-grade architecture for less than the price of a coffee per month.'</em></p>
+">
+  <span class="eyebrow">07 · Conclusion</span>
+  <h2>Advantages of cloud-native</h2>
+  <div class="card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(34,197,94,0.1), rgba(99,102,241,0.05)); border-color: rgba(34,197,94,0.2);">
+    <ul class="clean" style="font-size: 1.15rem;">
+      <li>Scales <strong>0 → 100K users</strong> without code changes</li>
+      <li>Pay only for what you use — <strong>€26/year at low scale</strong></li>
+      <li>Built-in security via <strong>Managed Identity &amp; Key Vault</strong></li>
+      <li>Built-in observability via <strong>Application Insights</strong></li>
+      <li>No infrastructure to maintain — fully managed</li>
+    </ul>
+  </div>
+  <p style="margin-top: 1.5rem; font-size: 1.2rem; color: var(--green); font-weight: 600; text-align: center;">
+    A production-grade architecture for less than a coffee per month.
+  </p>
+</section>
+
+<!-- ============ SLIDE 19: TRADE-OFFS ============ -->
+<section class="slide" data-notes="
+<strong>Trade-offs (45 seconds):</strong>
+<p><strong>Be honest here</strong> — showing self-awareness builds credibility.</p>
+<p>Best line: <em>'Cold start latency is the obvious one. Vendor lock-in is the long-term one. We accept both for what we get in return.'</em></p>
+<p>Don't apologise. State the trade-off and move on.</p>
+">
+  <span class="eyebrow">07 · Conclusion</span>
+  <h2>Trade-offs we accept</h2>
+  <div class="card" style="margin-top: 1.5rem; background: linear-gradient(135deg, rgba(239,68,68,0.08), rgba(190,24,93,0.05)); border-color: rgba(239,68,68,0.2);">
+    <ul class="clean" style="font-size: 1.15rem;">
+      <li><strong>Vendor lock-in</strong> — moving off Azure means rewriting integrations</li>
+      <li><strong>Cold start latency</strong> — ~2–3s for first Java request after idle</li>
+      <li><strong>Steeper learning curve</strong> than VM-based deployment</li>
+      <li><strong>Distributed debugging</strong> is harder than local development</li>
+    </ul>
+  </div>
+  <div class="stat-row" style="margin-top: 1.5rem;">
+    <div class="stat"><div class="stat-label">Azure services</div><div class="stat-value indigo">7</div></div>
+    <div class="stat"><div class="stat-label">Bicep modules</div><div class="stat-value pink">7</div></div>
+    <div class="stat"><div class="stat-label">€/year · 1K users</div><div class="stat-value green">€320</div></div>
+    <div class="stat"><div class="stat-label">€/user/mo · 100K</div><div class="stat-value green">€0.0099</div></div>
+  </div>
+</section>
+
+<!-- ============ SLIDE 20: Q&A ============ -->
+<section class="slide qa-slide" data-notes="
+<strong>Q&amp;A (5+ minutes):</strong>
+<p>Don't rush answers. Pause for two seconds before responding — gives time to think and looks confident.</p>
+<p>If you don't know: <em>'Great question — we didn't dig into that specifically. My instinct is X, but I'd want to verify before committing.'</em></p>
+<p>Best answers reference <em>specific files or commits</em> in the codebase.</p>
+<p><strong>Likely questions:</strong></p>
+<p>• Cold start mitigation? → <em>'Always-On (paid) or Premium plan. For our scale, the trade-off isn't worth it.'</em></p>
+<p>• Cosmos consistency? → <em>'Session consistency. Strong would double our RU cost for no benefit since each user only reads their own data.'</em></p>
+<p>• Service Bus failure? → <em>'Publisher is fire-and-forget — we log on failure but the transaction still saves. Subscribers have dead-letter queues with max delivery count of 3.'</em></p>
+<p>• Why not Static Web Apps? → <em>'Region restriction in francecentral.'</em></p>
+<p>• Secret rotation? → <em>'Key Vault rotation policy with 90-day expiry. App reads secrets via reference — no redeploy needed when keys rotate.'</em></p>
+">
+  <h1>Questions?</h1>
+  <div class="qa-meta">
+    <p>Live demo · <a href="https://finflow.z28.web.core.windows.net" target="_blank" rel="noopener noreferrer">finflow.z28.web.core.windows.net</a></p>
+    <p>Zakaria Shahruri · Salina Giri</p>
+    <p style="margin-top: 0.5rem; font-size: 0.95rem; color: rgba(255,255,255,0.7);">FinFlow · Cloud Native Engineering 2026</p>
+  </div>
+</section>
+
+</div>
+
+<div class="chrome">
+  <div class="brand"><div class="logo"></div> FinFlow · CNE 2026</div>
+  <div class="slide-num"><span id="currentSlide">1</span> / <span id="totalSlides">20</span></div>
+</div>
+
+<aside class="notes" id="notesPanel">
+  <h4>Speaker notes</h4>
+  <div id="notesContent"></div>
+</aside>
+
+<script>
+(() => {
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let idx = 0;
+
+  document.getElementById('totalSlides').textContent = total;
+  const progress = document.getElementById('progressBar');
+  const current = document.getElementById('currentSlide');
+  const notesPanel = document.getElementById('notesPanel');
+  const notesContent = document.getElementById('notesContent');
+  const notesToggle = document.getElementById('notesToggle');
+
+  function render() {
+    slides.forEach((s, i) => s.classList.toggle('active', i === idx));
+    progress.style.width = `${((idx + 1) / total) * 100}%`;
+    current.textContent = idx + 1;
+    notesContent.innerHTML = slides[idx].dataset.notes || '<em>No notes for this slide.</em>';
+  }
+
+  function go(delta) {
+    const next = idx + delta;
+    if (next >= 0 && next < total) { idx = next; render(); }
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (['ArrowRight', 'PageDown'].includes(e.key)) { e.preventDefault(); go(1); }
+    else if (['ArrowLeft', 'PageUp'].includes(e.key)) { e.preventDefault(); go(-1); }
+    else if (e.key === 'Home') { idx = 0; render(); }
+    else if (e.key === 'End') { idx = total - 1; render(); }
+    else if (e.key.toLowerCase() === 's') { notesPanel.classList.toggle('open'); }
+    else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if (e.key === ' ') {
+      if (document.activeElement && document.activeElement.tagName === 'A') return;
+      e.preventDefault(); go(1);
+    }
+  });
+
+  notesToggle.addEventListener('click', (e) => { e.stopPropagation(); notesPanel.classList.toggle('open'); });
+
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('a')) return;
+    if (e.target.closest('.notes')) return;
+    if (e.target.closest('.notes-toggle')) return;
+    go(1);
+  });
+
+  render();
+})();
+</script>
+
+</body>
+</html>
