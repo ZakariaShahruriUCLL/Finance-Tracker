@@ -18,6 +18,9 @@ jobs:
           java-version: '21'
           distribution: 'microsoft'
 
+      - name: Test
+        run: cd backend && mvn test
+
       - name: Build
         run: cd backend && mvn clean package -DskipTests
 
