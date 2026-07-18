@@ -1,6 +1,8 @@
-# Finance Tracker
+# FinFlow
 
-A cloud-native personal finance tracking application built on Microsoft Azure.
+[![Tests](https://github.com/ZakariaShahruri/finflow/actions/workflows/test.yml/badge.svg)](https://github.com/ZakariaShahruri/finflow/actions/workflows/test.yml)
+
+A cloud-native personal finance tracker built on Microsoft Azure.
 
 ### Features
 
@@ -12,6 +14,26 @@ A cloud-native personal finance tracking application built on Microsoft Azure.
 - **Budget alerts** — a configurable monthly spending limit; a warning banner appears on the dashboard when the limit is exceeded, driven by the Azure Service Bus event pipeline
 - **Light / dark mode** — full theme switching with persistent CSS variables
 - **Skeleton loaders** — loading states on all pages for a polished user experience
+
+## Why FinFlow?
+
+Most personal finance apps either charge a subscription, sell user transaction data, or can't be self-hosted. FinFlow is an open-source, self-hostable tracker that runs at near-zero cost on Azure, with all data owned by the user — built for students and freelancers managing irregular income, and for anyone who'd rather not hand transaction history to a data-broker app.
+
+It's also a deliberate exercise in applying cloud-native principles end-to-end — serverless compute, managed services, event-driven messaging, caching, IaC, and secrets-as-code — rather than lifting-and-shifting a monolith onto a VM.
+
+**What that buys:**
+- Scales from 0 to 100K users without code changes (Consumption plan + Cosmos DB autoscale)
+- Pay only for what's used — roughly €320/year at 1,000 active users, and €0.0099/user/month at 100K
+- Security via Managed Identity + Key Vault, no credentials in code or config
+- Observability via Application Insights out of the box
+- No servers to patch or provision — fully managed at every layer
+
+**Trade-offs accepted, deliberately:**
+- Vendor lock-in — moving off Azure means rewriting the Cosmos DB, Service Bus, and Blob Storage integrations
+- Cold start latency — ~2-3s for the first request after the Function App has been idle
+- A steeper learning curve than a single VM + database, and harder to debug across distributed services locally
+
+*(Condensed from the original project presentation — see [`docs/presentation.html`](docs/presentation.html) for the full deck.)*
 
 ## Screenshots
 
