@@ -17,3 +17,6 @@ frontend/dist/
 
 # Bicep parameter file (contains secrets)
 infrastructure/main.bicepparam
+
+# Course presentation deck (not part of the portfolio-facing repo)
+docs/presentation.html

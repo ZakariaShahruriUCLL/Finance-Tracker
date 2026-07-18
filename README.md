@@ -33,7 +33,7 @@ It's also a deliberate exercise in applying cloud-native principles end-to-end �
 - Cold start latency — ~2-3s for the first request after the Function App has been idle
 - A steeper learning curve than a single VM + database, and harder to debug across distributed services locally
 
-*(Condensed from the original project presentation — see [`docs/presentation.html`](docs/presentation.html) for the full deck.)*
+*(Condensed from the original project presentation.)*
 
 ## Screenshots
 
