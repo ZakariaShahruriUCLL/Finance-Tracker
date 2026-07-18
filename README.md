@@ -13,6 +13,26 @@ A cloud-native personal finance tracking application built on Microsoft Azure.
 - **Light / dark mode** — full theme switching with persistent CSS variables
 - **Skeleton loaders** — loading states on all pages for a polished user experience
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="FinFlow dashboard — dark mode" width="850">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/login.png" alt="Login screen" width="270">
+  <img src="docs/screenshots/transactions.png" alt="Transactions list with filters" width="270">
+  <img src="docs/screenshots/categories.png" alt="Categories — custom and predefined" width="270">
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/dashboard-light.png" alt="Dashboard — light mode" width="850">
+</p>
+
+> Not deployed live — Azure Cache for Redis and Service Bus (Standard tier) don't have a free tier, so the stack isn't kept running between demos. See [Infrastructure Deployment](#infrastructure-deployment) to stand it up yourself from the Bicep templates.
+
+---
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -29,6 +49,42 @@ A cloud-native personal finance tracking application built on Microsoft Azure.
 | CI/CD | GitHub Actions |
 
 ---
+
+## Architecture
+
+```mermaid
+flowchart LR
+    FE["React + Vite<br/>Static Website"]
+
+    subgraph Compute["Azure Functions (Consumption)"]
+        FN["Spring Boot API"]
+    end
+
+    COSMOS[("Cosmos DB<br/>users · transactions · categories")]
+    REDIS[("Cache for Redis<br/>balance · summary · breakdown")]
+    BLOB[("Blob Storage<br/>receipts via SAS URL")]
+
+    subgraph Messaging["Service Bus"]
+        TOPIC{{"transaction-events topic"}}
+        AUDIT["audit-log subscription"]
+        BUDGET["budget-alert subscription"]
+    end
+
+    KV["Key Vault<br/>via Managed Identity"]
+    AI["Application Insights"]
+
+    FE -->|"HTTPS + JWT"| FN
+    FN --> COSMOS
+    FN <--> REDIS
+    FN --> BLOB
+    FN -->|publish| TOPIC
+    TOPIC --> AUDIT
+    TOPIC --> BUDGET
+    KV -.secrets.-> FN
+    FN -.telemetry.-> AI
+```
+
+All of this is provisioned as code — see [`infrastructure/`](infrastructure/) for the Bicep modules behind every box above.
 
 ## Architecture Decisions
 
